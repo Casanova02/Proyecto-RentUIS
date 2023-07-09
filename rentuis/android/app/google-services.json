@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "644496866992",
+    "project_id": "rentuisdatabase",
+    "storage_bucket": "rentuisdatabase.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:644496866992:android:ea142e637fa6b02b774575",
+        "android_client_info": {
+          "package_name": "com.example.rentuis"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "644496866992-hhtrs1md8j2iiikmfh65jud3ulbd162m.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAkkqcjgCgFobqKq2bt6PM-ziy620Jov2M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "644496866992-hhtrs1md8j2iiikmfh65jud3ulbd162m.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
