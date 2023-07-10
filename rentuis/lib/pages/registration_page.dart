@@ -113,7 +113,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
     Navigator.pushReplacementNamed(context, '/');
   }
   void _pickImage(ImageSource source) async {
-    final pickedFile = await ImagePicker().getImage(source: source);
+    final pickedFile = await ImagePicker().pickImage(source: source);
 
     setState(() {
       if (pickedFile != null) {
