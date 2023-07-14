@@ -31,6 +31,7 @@ dependencies:
   flutter:
     sdk: flutter
   firebase_core: ^2.14.0
+  firebase_storage: ^11.2.4
   cloud_firestore: ^4.8.2
   image_picker: ^1.0.0
   mailer: ^6.0.1
@@ -64,6 +65,8 @@ flutter:
     - assets/login_button.png
     - assets/header_2.png
     - assets/header_3.png
+    - assets/app_bar.png
+    - assets/password_email.png
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
