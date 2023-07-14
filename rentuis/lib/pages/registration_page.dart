@@ -3,7 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
-
 class RegistrationPage extends StatefulWidget {
   @override
   _RegistrationPageState createState() => _RegistrationPageState();
@@ -112,6 +111,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
     );
     Navigator.pushReplacementNamed(context, '/');
   }
+
   void _pickImage(ImageSource source) async {
     final pickedFile = await ImagePicker().pickImage(source: source);
 
@@ -126,33 +126,30 @@ class _RegistrationPageState extends State<RegistrationPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Colors.lightBlueAccent,
+                Colors.lightGreen,
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
         title: Text('Registrar usuario'),
       ),
-      body: SingleChildScrollView( // Usar SingleChildScrollView para permitir el desplazamiento
-        child: Padding(
+      body: SingleChildScrollView(
+        child: Container(
           padding: EdgeInsets.all(16.0),
           child: Form(
             key: _formKey,
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(
-                  'Registrar usuario',
-                  style: TextStyle(
-                    fontSize: 24.0,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 32.0),
-                CircleAvatar(
-                  radius: 64.0,
-                  backgroundImage: profileImage != null && profileImage!.existsSync()
-                      ? Image.file(File(profileImage!.path)).image
-                      : AssetImage('assets/profile_placeholder.jpg'),
-                ),
-                SizedBox(height: 16.0),
-                TextButton(
-                  onPressed: () {
+                GestureDetector(
+                  onTap: () {
                     showDialog(
                       context: context,
                       builder: (BuildContext context) {
@@ -183,14 +180,36 @@ class _RegistrationPageState extends State<RegistrationPage> {
                       },
                     );
                   },
-                  child: Text('Agregar foto de perfil'),
+                  child: Container(
+                    width: 150.0,
+                    height: 150.0,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.grey[200],
+                      image: profileImage != null && profileImage!.existsSync()
+                          ? DecorationImage(
+                        image: FileImage(profileImage!),
+                        fit: BoxFit.cover,
+                      )
+                          : null,
+                    ),
+                    child: profileImage == null
+                        ? Icon(
+                      Icons.add_a_photo,
+                      size: 40.0,
+                      color: Colors.grey[400],
+                    )
+                        : null,
+                  ),
                 ),
                 SizedBox(height: 16.0),
                 TextFormField(
                   controller: nombresController,
                   decoration: InputDecoration(
                     labelText: 'Nombres',
-                    border: OutlineInputBorder(),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30.0),
+                    ),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -206,7 +225,9 @@ class _RegistrationPageState extends State<RegistrationPage> {
                   controller: apellidosController,
                   decoration: InputDecoration(
                     labelText: 'Apellidos',
-                    border: OutlineInputBorder(),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30.0),
+                    ),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -219,30 +240,12 @@ class _RegistrationPageState extends State<RegistrationPage> {
                 ),
                 SizedBox(height: 16.0),
                 TextFormField(
-                  controller: numeroTelefonoController,
-                  decoration: InputDecoration(
-                    labelText: 'Número de teléfono',
-                    border: OutlineInputBorder(),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Este campo es obligatorio';
-                    } else if (value.length != 10) {
-                      return 'El número de teléfono no es válido';
-                    } else if (!value.startsWith('30') &&
-                        !value.startsWith('31') &&
-                        !value.startsWith('32')) {
-                      return 'El número de teléfono no es válido';
-                    }
-                    return null;
-                  },
-                ),
-                SizedBox(height: 16.0),
-                TextFormField(
                   controller: emailController,
                   decoration: InputDecoration(
                     labelText: 'Correo electrónico',
-                    border: OutlineInputBorder(),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30.0),
+                    ),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -260,7 +263,9 @@ class _RegistrationPageState extends State<RegistrationPage> {
                   controller: contrasenaController,
                   decoration: InputDecoration(
                     labelText: 'Contraseña',
-                    border: OutlineInputBorder(),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30.0),
+                    ),
                   ),
                   obscureText: true,
                   validator: (value) {
@@ -273,13 +278,35 @@ class _RegistrationPageState extends State<RegistrationPage> {
                   },
                 ),
                 SizedBox(height: 16.0),
+                TextFormField(
+                  controller: numeroTelefonoController,
+                  decoration: InputDecoration(
+                    labelText: 'Número de teléfono',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30.0),
+                    ),
+                  ),
+                  keyboardType: TextInputType.phone,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Este campo es obligatorio';
+                    } else if (value.length != 10 ||
+                        !(value.startsWith('30') || value.startsWith('31') || value.startsWith('32'))) {
+                      return 'Ingresa un número de teléfono válido';
+                    }
+                    return null;
+                  },
+                ),
+                SizedBox(height: 16.0),
                 Container(
                   width: 400.0,
                   child: DropdownButtonFormField<String>(
                     value: carreraValue,
                     decoration: InputDecoration(
                       labelText: 'Carrera',
-                      border: OutlineInputBorder(),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30.0),
+                      ),
                     ),
                     items: carreraOptions.map((String option) {
                       return DropdownMenuItem<String>(
@@ -301,13 +328,37 @@ class _RegistrationPageState extends State<RegistrationPage> {
                   ),
                 ),
                 SizedBox(height: 32.0),
-                ElevatedButton(
-                  onPressed: () {
+                GestureDetector(
+                  onTap: () {
                     if (_formKey.currentState != null && _formKey.currentState!.validate()) {
                       verificarExistenciaUsuario(context);
                     }
                   },
-                  child: Text('Confirmar registro'),
+                  child: Container(
+                    width: double.infinity,
+                    height: 50.0,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(30.0),
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.lightBlueAccent,
+                          Colors.lightGreen,
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                    ),
+                    child: Center(
+                      child: Text(
+                        'Confirmar registro',
+                        style: TextStyle(
+                          fontSize: 18.0,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),

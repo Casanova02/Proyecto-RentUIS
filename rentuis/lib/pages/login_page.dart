@@ -1,7 +1,6 @@
 import 'package:rentuis/pages/registration_page.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:rentuis/pages/home_page.dart';
 import 'package:rentuis/pages/password_recovery_page.dart';
@@ -119,9 +118,9 @@ class _LoginPageState extends State<LoginPage> {
                 crossAxisAlignment: CrossAxisAlignment.center, // Centra los widgets horizontalmente
                 children: [
                   Text(
-                    "Hola!",
+                    "Te damos la bienvenida!",
                     style: TextStyle(
-                      fontSize: 50,
+                      fontSize: 30,
                       fontWeight: FontWeight.bold,
                     ),
                   ),

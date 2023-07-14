@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mailer/mailer.dart';
@@ -120,34 +121,97 @@ class _PasswordRecoveryPageState extends State<PasswordRecoveryPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Colors.lightBlueAccent,
+                Colors.lightGreen,
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
         title: Text('Recuperación de contraseña'),
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: EdgeInsets.all(16.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(
-              'Recuperación de contraseña',
+              '¿Olvidaste tu contraseña?',
               style: TextStyle(
                 fontSize: 24.0,
                 fontWeight: FontWeight.bold,
               ),
+            ),
+            SizedBox(height: 20.0),
+            Text(
+              'Ingresa tu correo electrónico registrado y te enviaremos un código de verificación.',
+              style: TextStyle(
+                fontSize: 15,
+                color: Colors.grey[500],
+              ),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 32.0),
+            Image.asset(
+              'assets/password_email.png', // Ruta de la imagen
+              width: 200.0,
+              height: 200.0,
+              fit: BoxFit.contain,
             ),
             SizedBox(height: 32.0),
             TextFormField(
               controller: emailController,
               decoration: InputDecoration(
                 labelText: 'Correo electrónico',
-                border: OutlineInputBorder(),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30.0),
+                ),
               ),
             ),
             SizedBox(height: 16.0),
-            ElevatedButton(
-              onPressed: () {
-                checkAccountExists(context);
-              },
-              child: Text('Enviar código de verificación'),
+            Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.lightBlueAccent,
+                    Colors.lightGreen,
+                  ],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
+                borderRadius: BorderRadius.circular(30.0),
+              ),
+              child: ElevatedButton(
+                onPressed: () {
+                  checkAccountExists(context);
+                },
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all<Color>(Colors.transparent),
+                  elevation: MaterialStateProperty.all<double>(0.0),
+                  shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30.0),
+                    ),
+                  ),
+                ),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 16.0),
+                  child: Text(
+                    'Enviar código de verificación',
+                    style: TextStyle(
+                      fontSize: 16.0,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
             ),
             SizedBox(height: 16.0),
             if (!accountExists)
@@ -181,13 +245,33 @@ class VerificationCodePage extends StatefulWidget {
 }
 
 class _VerificationCodePageState extends State<VerificationCodePage> {
-  final TextEditingController codeController = TextEditingController();
+  List<TextEditingController> codeControllers = [];
+  int codeLength = 6;
+  bool _isCodeCorrect = false;
   final TextEditingController passwordController = TextEditingController();
 
-  bool _isCodeCorrect = false;
+  @override
+  void initState() {
+    super.initState();
+    for (int i = 0; i < codeLength; i++) {
+      codeControllers.add(TextEditingController());
+    }
+  }
 
-  void _verifyVerificationCode(BuildContext context) {
-    final inputCode = codeController.text;
+  @override
+  void dispose() {
+    for (int i = 0; i < codeLength; i++) {
+      codeControllers[i].dispose();
+    }
+    passwordController.dispose();
+    super.dispose();
+  }
+
+  void _verifyCode() {
+    String inputCode = "";
+    for (int i = 0; i < codeLength; i++) {
+      inputCode += codeControllers[i].text;
+    }
 
     if (inputCode.isNotEmpty && inputCode == widget.verificationCode && !_isCodeExpired()) {
       setState(() {
@@ -241,7 +325,7 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
       );
       return;
     }
-    // Actualizar la contraseña en la base de datos para el usuario correspondiente
+
     FirebaseFirestore.instance
         .collection('usuarios')
         .where('email', isEqualTo: widget.userEmail)
@@ -249,39 +333,89 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
         .then((QuerySnapshot snapshot) {
       if (snapshot.docs.isNotEmpty) {
         final user = snapshot.docs.first;
-        user.reference.update({'contraseña': newPassword});
+        user.reference.update({'contraseña': newPassword}).then((_) {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: Text('Contraseña restablecida'),
+              content: Text('Tu contraseña se ha restablecido correctamente.'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.pop(context);
+                  },
+                  child: Text('Aceptar'),
+                ),
+              ],
+            ),
+          );
+        }).catchError((error) {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: Text('Error'),
+              content: Text('No se pudo restablecer la contraseña. Inténtalo nuevamente más tarde.'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text('Aceptar'),
+                ),
+              ],
+            ),
+          );
+        });
+      } else {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('Error'),
+            content: Text('No se encontró el usuario correspondiente. Inténtalo nuevamente.'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text('Aceptar'),
+              ),
+            ],
+          ),
+        );
       }
     });
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Contraseña restablecida'),
-        content: Text('Tu contraseña se ha restablecido correctamente.'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context);
-            },
-            child: Text('Aceptar'),
-          ),
-        ],
-      ),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Colors.lightBlueAccent,
+                Colors.lightGreen,
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
         title: Text('Verificación de código'),
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: EdgeInsets.all(16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            SizedBox(height: 32.0),
+            Icon(
+              CupertinoIcons.envelope_open_fill,
+              size: 50.0,
+              color: Colors.lightGreen,
+            ),
             Text(
               'Ingresa el código de verificación',
               style: TextStyle(
@@ -307,11 +441,32 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 16.0),
-            TextFormField(
-              controller: codeController,
-              decoration: InputDecoration(
-                labelText: 'Código de verificación',
-                border: OutlineInputBorder(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(
+                codeLength,
+                    (index) => Container(
+                  width: 40.0,
+                  child: TextFormField(
+                    controller: codeControllers[index],
+                    textAlign: TextAlign.center,
+                    maxLength: 1,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      counterText: '',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                    ),
+                    onChanged: (value) {
+                      if (value.length == 1 && index < codeLength - 1) {
+                        FocusScope.of(context).nextFocus();
+                      } else if (value.isEmpty && index > 0) {
+                        FocusScope.of(context).previousFocus();
+                      }
+                    },
+                  ),
+                ),
               ),
             ),
             SizedBox(height: 16.0),
@@ -323,24 +478,90 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
                     obscureText: true,
                     decoration: InputDecoration(
                       labelText: 'Nueva contraseña',
-                      border: OutlineInputBorder(),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30.0),
+                      ),
+                      prefixIcon: Icon(
+                        Icons.password,
+                        color: Colors.lightBlueAccent,
+                      ),
                     ),
                   ),
                   SizedBox(height: 16.0),
-                  ElevatedButton(
-                    onPressed: () {
-                      _resetPassword();
-                    },
-                    child: Text('Restablecer contraseña'),
+                  Container(
+                    width: double.infinity,
+                    height: 50.0,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(30.0),
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.lightBlueAccent,
+                          Colors.lightGreen,
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                    ),
+                    child: ElevatedButton(
+                      onPressed: _resetPassword,
+                      child: Text(
+                        'Restablecer contraseña',
+                        style: TextStyle(
+                          fontSize: 18.0,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all<Color>(Colors.transparent),
+                        padding: MaterialStateProperty.all<EdgeInsetsGeometry>(EdgeInsets.zero),
+                        elevation: MaterialStateProperty.all<double>(0.0),
+                        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                          RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30.0),
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),
             if (!_isCodeCorrect)
-              ElevatedButton(
-                onPressed: () {
-                  _verifyVerificationCode(context);
-                },
-                child: Text('Verificar código'),
+              Container(
+                width: double.infinity,
+                height: 50.0,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(30.0),
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.lightBlueAccent,
+                      Colors.lightGreen,
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+                child: ElevatedButton(
+                  onPressed: _verifyCode,
+                  child: Text(
+                    'Verificar código',
+                    style: TextStyle(
+                      fontSize: 18.0,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all<Color>(Colors.transparent),
+                    padding: MaterialStateProperty.all<EdgeInsetsGeometry>(EdgeInsets.zero),
+                    elevation: MaterialStateProperty.all<double>(0.0),
+                    shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                      RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30.0),
+                      ),
+                    ),
+                  ),
+                ),
               ),
           ],
         ),
@@ -348,3 +569,4 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
     );
   }
 }
+
