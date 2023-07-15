@@ -1,9 +1,12 @@
-import 'package:rentuis/pages/registration_page.dart';
-import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:rentuis/pages/home_page.dart';
 import 'package:rentuis/pages/password_recovery_page.dart';
+import 'package:rentuis/pages/registration_page.dart';
+import 'package:rentuis/pages/user_session.dart';
+
+
+ 
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -15,55 +18,27 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   var emailController = TextEditingController();
   var passwordController = TextEditingController();
+  final UserSession userSession = UserSession();
 
   void signIn(BuildContext context) async {
     final String email = emailController.text.trim();
     final String password = passwordController.text.trim();
 
-    final QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-        .collection('usuarios')
-        .where('email', isEqualTo: email)
-        .get();
+    await userSession.signIn(email, password);
 
-    if (querySnapshot.docs.isNotEmpty) {
-      final DocumentSnapshot userDoc = querySnapshot.docs.first;
-
-      final Map<String, dynamic>? userData =
-      userDoc.data() as Map<String, dynamic>?;
-
-      final userPassword = userData?['contraseña'];
-
-      if (userPassword != null && userPassword == password) {
-        // Las credenciales son válidas, el usuario inicia sesión
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => HomePage()),
-        );
-      } else {
-        // La contraseña no coincide
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: Text('Error de inicio de sesión'),
-            content: Text('La contraseña ingresada no es válida.'),
-            actions: [
-              TextButton(
-                child: Text('Cerrar'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          ),
-        );
-      }
+    if (userSession.userId != null) {
+      // Las credenciales son válidas, el usuario inicia sesión
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => HomePage()),
+      );
     } else {
-      // No se encontró una cuenta con el correo electrónico proporcionado
+      // La contraseña no coincide o no se encontró una cuenta con el correo electrónico proporcionado
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
           title: Text('Error de inicio de sesión'),
-          content: Text('No se encontró una cuenta con este correo electrónico.'),
+          content: Text('La contraseña ingresada no es válida.'),
           actions: [
             TextButton(
               child: Text('Cerrar'),
@@ -96,12 +71,12 @@ class _LoginPageState extends State<LoginPage> {
     double w = MediaQuery.of(context).size.width;
     double h = MediaQuery.of(context).size.height;
     return Scaffold(
-        backgroundColor: Colors.white,
-        body: SingleChildScrollView(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center, // Centra los widgets verticalmente
-              children: [
-              Container(
+      backgroundColor: Colors.white,
+      body: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
               width: w,
               height: h * 0.35,
               decoration: BoxDecoration(
@@ -115,7 +90,7 @@ class _LoginPageState extends State<LoginPage> {
               margin: const EdgeInsets.only(left: 20, right: 20),
               width: w,
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center, // Centra los widgets horizontalmente
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
                     "Te damos la bienvenida!",
@@ -124,7 +99,7 @@ class _LoginPageState extends State<LoginPage> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(height: 20), // Espacio adicional
+                  SizedBox(height: 20),
                   Text(
                     "Inicia sesión en tu cuenta",
                     style: TextStyle(
@@ -272,10 +247,9 @@ class _LoginPageState extends State<LoginPage> {
                 ],
               ),
             ),
-              ],
-            ),
+          ],
         ),
+      ),
     );
   }
 }
-

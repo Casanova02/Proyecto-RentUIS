@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:rentuis/pages/main_screen.dart';
 import 'package:rentuis/pages/password_recovery_page.dart';
+import 'package:rentuis/pages/request_page.dart';
 import 'pages/login_page.dart';
 import 'pages/home_page.dart';
 import 'pages/registration_page.dart';
@@ -15,6 +17,7 @@ class RentUISApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner:false ,
       title: 'RentUIS',
       theme: ThemeData(
         primarySwatch: Colors.lightGreen, // Cambia el color primario aquí
@@ -25,9 +28,11 @@ class RentUISApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => LoginPage(),
+        '/main': (context) => MainScreen(), 
         '/home': (context) => HomePage(),
         '/register': (context) => RegistrationPage(),
         '/password_recovery': (context) => PasswordRecoveryPage(),
+        '/requests': (context) => RequestPage(), //
       },
     );
   }

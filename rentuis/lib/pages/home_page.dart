@@ -1,8 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:rentuis/pages/rents_page.dart';
+import 'package:rentuis/pages/request_page.dart';
 
-class HomePage extends StatelessWidget {
+
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+    int selectedIndex = 1;
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    final screens = [const RequestPage(),const HomePage(), const RentPage()];
+
     return Scaffold(
       appBar: AppBar(
         title: Text('RentUIS'),
@@ -18,7 +33,7 @@ class HomePage extends StatelessWidget {
                 children: [
                   CircleAvatar(
                     radius: 32.0,
-                    backgroundImage: AssetImage('assets/profile_placeholder.png'),
+                    
                   ),
                   SizedBox(width: 16.0),
                   Text(
@@ -69,22 +84,51 @@ class HomePage extends StatelessWidget {
           ),
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 0,
+      
+    bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.shifting,
+        currentIndex: selectedIndex,
+        onTap: (value) {
+          setState(() {
+            selectedIndex = value;
+            Navigator.push(
+            context,
+            PageRouteBuilder(
+                pageBuilder: (_, __, ___) => screens[value],
+                transitionsBuilder: (_, animation, __, child) {
+                  return FadeTransition(
+                    opacity: animation,
+                    child: child,
+                  );
+                },
+              ),
+        );
+          });
+        },
+        elevation: 0,
         items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.article),
+            icon: const Icon(Icons.article,),
+            activeIcon: const Icon(Icons.article_outlined),
             label: 'Solicitudes',
+            backgroundColor: colors.primary,
+            
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
+            icon: const Icon(Icons.home_outlined),
+            activeIcon: const Icon(Icons.home),
             label: 'Inicio',
+            backgroundColor: colors.primary,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.monetization_on),
-            label: 'Rentas',
+            icon: const Icon(Icons.monetization_on),
+            activeIcon: const Icon(Icons.monetization_on_outlined),
+            label: 'Ofertas',
+            backgroundColor: colors.tertiary,
           ),
+        
         ],
+        
       ),
     );
   }
