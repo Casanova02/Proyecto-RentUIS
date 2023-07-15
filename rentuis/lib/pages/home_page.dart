@@ -13,8 +13,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  late String userFullName;
-  late String userImageUrl;
+  String? userFullName;
+  String? userImageUrl;
   int selectedIndex = 1;
 
   @override
@@ -42,7 +42,11 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final screens = [RequestPage(userEmail: widget.userEmail), HomePage(userEmail: widget.userEmail), RentPage(userEmail: widget.userEmail)];
+    final screens = [
+      RequestPage(userEmail: widget.userEmail),
+      HomePage(userEmail: widget.userEmail),
+      RentPage(userEmail: widget.userEmail),
+    ];
 
     return Scaffold(
       appBar: AppBar(
