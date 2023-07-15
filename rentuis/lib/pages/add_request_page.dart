@@ -7,9 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
 class AddRequestPage extends StatefulWidget {
-  final String userEmail;
-
-  const AddRequestPage({Key? key, required this.userEmail}) : super(key: key);
+  const AddRequestPage({Key? key}) : super(key: key);
 
   @override
   _AddRequestPageState createState() => _AddRequestPageState();
@@ -58,7 +56,7 @@ class _AddRequestPageState extends State<AddRequestPage> {
   void redirectToRequestPage() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => RequestPage(userEmail: widget.userEmail)),
+      MaterialPageRoute(builder: (context) => RequestPage()),
     );
   }
 

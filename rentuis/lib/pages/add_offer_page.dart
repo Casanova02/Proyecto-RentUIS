@@ -7,9 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
 class AddOfferPage extends StatefulWidget {
-  final String userEmail;
-
-  const AddOfferPage({Key? key, required this.userEmail}) : super(key: key);
+  const AddOfferPage({Key? key}) : super(key: key);
 
   @override
   _AddOfferPageState createState() => _AddOfferPageState();
@@ -55,7 +53,7 @@ class _AddOfferPageState extends State<AddOfferPage> {
   void redirectToRentsPage() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => RentPage(userEmail: widget.userEmail)),
+      MaterialPageRoute(builder: (context) => RentPage()),
     );
   }
 
@@ -78,11 +76,7 @@ class _AddOfferPageState extends State<AddOfferPage> {
   }
 
   void addOffer() async {
-    if (_image == null ||
-        _titleController.text.isEmpty ||
-        _priceController.text.isEmpty ||
-        _selectedTimeOption == null ||
-        _descriptionController.text.isEmpty) {
+    if (_image == null || _titleController.text.isEmpty || _priceController.text.isEmpty || _selectedTimeOption == null || _descriptionController.text.isEmpty) {
       showErrorMessage('Debes llenar todos los campos para añadir una oferta.');
     } else {
       if (userSession.userId != null) {
@@ -139,9 +133,7 @@ class _AddOfferPageState extends State<AddOfferPage> {
                   },
                   child: CircleAvatar(
                     radius: 100.0,
-                    backgroundImage: _image != null
-                        ? FileImage(File(_image!.path)) as ImageProvider<Object>
-                        : AssetImage('assets/profile_placeholder.jpg'),
+                    backgroundImage: _image != null ? FileImage(File(_image!.path)) as ImageProvider<Object> : AssetImage('assets/profile_placeholder.jpg'),
                   ),
                 ),
                 SizedBox(height: 30.0),

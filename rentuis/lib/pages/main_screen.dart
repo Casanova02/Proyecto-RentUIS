@@ -1,12 +1,11 @@
+
 import 'package:flutter/material.dart';
 import 'package:rentuis/pages/home_page.dart';
 import 'package:rentuis/pages/rents_page.dart';
 import 'package:rentuis/pages/request_page.dart';
 
 class MainScreen extends StatefulWidget {
-  final String userEmail;
-
-  MainScreen({required this.userEmail});
+  const MainScreen({super.key});
 
   @override
   State<MainScreen> createState() => _MainScreenState();
@@ -19,17 +18,15 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
 
-    final screens = [
-      RequestPage(userEmail: widget.userEmail),
-      HomePage(userEmail: widget.userEmail),
-      RentPage(userEmail: widget.userEmail),
-    ];
+    final screens = [const RequestPage(),const HomePage(), const RentPage()];
 
     return Scaffold(
+      
       body: IndexedStack(
         index: selectedIndex,
         children: screens,
       ),
+
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.shifting,
         currentIndex: selectedIndex,
@@ -55,7 +52,7 @@ class _MainScreenState extends State<MainScreen> {
           BottomNavigationBarItem(
             icon: const Icon(Icons.monetization_on),
             activeIcon: const Icon(Icons.monetization_on_outlined),
-            label: 'Rentas',
+            label: 'Users',
             backgroundColor: colors.tertiary,
           ),
         ],

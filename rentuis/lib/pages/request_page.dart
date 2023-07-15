@@ -2,13 +2,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:rentuis/pages/rents_page.dart';
 import 'package:intl/intl.dart';
+
 import 'add_request_page.dart';
 import 'home_page.dart';
+import 'offers_page.dart';
 
 class RequestPage extends StatefulWidget {
-  final String userEmail;
-
-  RequestPage({required this.userEmail});
+  const RequestPage({Key? key}) : super(key: key);
 
   @override
   State<RequestPage> createState() => _RequestPageState();
@@ -23,7 +23,7 @@ class _RequestPageState extends State<RequestPage> {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
 
-    final screens = [RequestPage(userEmail: widget.userEmail), HomePage(userEmail: widget.userEmail), RentPage(userEmail: widget.userEmail)];
+    final screens = [const RequestPage(), const HomePage(), const RentPage()];
 
     return Scaffold(
       appBar: AppBar(
@@ -31,7 +31,7 @@ class _RequestPageState extends State<RequestPage> {
         title: Text('Solicitudes disponibles'),
         centerTitle: false,
         automaticallyImplyLeading: false, // Eliminar el botón de navegación de retroceso
-        actions: [],
+        actions: [], // Eliminar los elementos de acción
       ),
       body: Column(
         children: [
@@ -84,21 +84,20 @@ class _RequestPageState extends State<RequestPage> {
                       DateTime endTime = DateFormat('h:mm a').parse(endTimeString);
 
                       String formattedStartDate =
-                      DateFormat('dd/MM/yy - hh:mm a').format(DateTime(startDate.year, startDate.month, startDate.day, startTime.hour, startTime.minute));
+                          DateFormat('dd/MM/yy - hh:mm a').format(DateTime(startDate.year, startDate.month, startDate.day, startTime.hour, startTime.minute));
                       String formattedEndDate =
-                      DateFormat('dd/MM/yy - hh:mm a').format(DateTime(endDate.year, endDate.month, endDate.day, endTime.hour, endTime.minute));
-
+                          DateFormat('dd/MM/yy - hh:mm a').format(DateTime(endDate.year, endDate.month, endDate.day, endTime.hour, endTime.minute));
 
                       return Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 40.0),
+                        padding: EdgeInsets.symmetric(horizontal: 40.0), // Espacio de relleno alrededor del item
                         child: Card(
-                          elevation: 4,
+                          elevation: 4, // Elevación para crear la sombra
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15.0),
+                            borderRadius: BorderRadius.circular(15.0), // Bordes redondeados
                           ),
                           child: ListTile(
                             leading: CircleAvatar(
-                              radius: 30.0,
+                              radius: 30.0, // Ajusta el tamaño según tus necesidades
                               backgroundImage: NetworkImage(imagePath),
                             ),
                             title: Column(
@@ -129,18 +128,20 @@ class _RequestPageState extends State<RequestPage> {
                             ),
                             trailing: ElevatedButton(
                               onPressed: () {
-
-                                print('Ofertar presionado en el artículo $itemName');
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => OffersPage()),
+                                );
                               },
                               child: Text('Ofertar'),
                               style: ElevatedButton.styleFrom(
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(15.0),
+                                  borderRadius: BorderRadius.circular(15.0), // Bordes redondeados
                                 ),
                               ),
-                            ),
+                            ), // Icono a la derecha
                             onTap: () {
-
+                              // Acción al hacer clic en un elemento
                               print('Elemento $index seleccionado');
                             },
                           ),
@@ -158,11 +159,10 @@ class _RequestPageState extends State<RequestPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-
           Navigator.push(
             context,
             PageRouteBuilder(
-              pageBuilder: (context, animation, secondaryAnimation) => AddRequestPage(userEmail: widget.userEmail),
+              pageBuilder: (context, animation, secondaryAnimation) => AddRequestPage(),
               transitionsBuilder: (context, animation, secondaryAnimation, child) {
                 return FadeTransition(
                   opacity: animation,
@@ -173,7 +173,7 @@ class _RequestPageState extends State<RequestPage> {
           );
         },
         child: Icon(Icons.add),
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.blue, // Color azul
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.shifting,
@@ -198,7 +198,7 @@ class _RequestPageState extends State<RequestPage> {
         elevation: 0,
         items: [
           BottomNavigationBarItem(
-            icon: const Icon(Icons.article,),
+            icon: const Icon(Icons.article),
             activeIcon: const Icon(Icons.article_outlined),
             label: 'Solicitudes',
             backgroundColor: colors.primary,
