@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'package:rentuis/pages/request_page.dart';
 import 'package:rentuis/pages/user_session.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -17,16 +16,19 @@ class AddRequestPage extends StatefulWidget {
 class _AddRequestPageState extends State<AddRequestPage> {
   final UserSession userSession = UserSession();
   TextEditingController _titleController = TextEditingController();
-  TextEditingController _priceController = TextEditingController();
-  TextEditingController _descriptionController = TextEditingController();
-  String? _selectedTimeOption;
+  TextEditingController _startDateController = TextEditingController();
+  TextEditingController _startTimeController = TextEditingController();
+  TextEditingController _endDateController = TextEditingController();
+  TextEditingController _endTimeController = TextEditingController();
   XFile? _image;
 
   @override
   void dispose() {
     _titleController.dispose();
-    _priceController.dispose();
-    _descriptionController.dispose();
+    _startDateController.dispose();
+    _startTimeController.dispose();
+    _endDateController.dispose();
+    _endTimeController.dispose();
     super.dispose();
   }
 
@@ -76,34 +78,94 @@ class _AddRequestPageState extends State<AddRequestPage> {
     );
   }
 
+  Future<void> selectStartDate() async {
+    final DateTime? selectedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(Duration(days: 365)),
+    );
+
+    if (selectedDate != null) {
+      _startDateController.text = selectedDate.day.toString().padLeft(2, '0') +
+          '/' +
+          selectedDate.month.toString().padLeft(2, '0') +
+          '/' +
+          selectedDate.year.toString().substring(2);
+    }
+  }
+
+  Future<void> selectStartTime() async {
+    final TimeOfDay? selectedTime = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
+
+    if (selectedTime != null) {
+      _startTimeController.text = selectedTime.format(context);
+    }
+  }
+
+  Future<void> selectEndDate() async {
+    final DateTime? selectedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(Duration(days: 365)),
+    );
+
+    if (selectedDate != null) {
+      _endDateController.text = selectedDate.day.toString().padLeft(2, '0') +
+          '/' +
+          selectedDate.month.toString().padLeft(2, '0') +
+          '/' +
+          selectedDate.year.toString().substring(2);
+    }
+  }
+
+  Future<void> selectEndTime() async {
+    final TimeOfDay? selectedTime = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
+
+    if (selectedTime != null) {
+      _endTimeController.text = selectedTime.format(context);
+    }
+  }
+
   void addRequest() async {
-    if (_image == null || _titleController.text.isEmpty || _priceController.text.isEmpty || _selectedTimeOption == null || _descriptionController.text.isEmpty) {
+    if (_image == null ||
+        _titleController.text.isEmpty ||
+        _startDateController.text.isEmpty ||
+        _startTimeController.text.isEmpty ||
+        _endDateController.text.isEmpty ||
+        _endTimeController.text.isEmpty) {
       showErrorMessage('Debes llenar todos los campos para añadir una solicitud.');
     } else {
       if (userSession.userId != null) {
         final String userId = userSession.userId!;
         final String title = _titleController.text.trim();
-        final int price = int.parse(_priceController.text.trim());
-        final String timeUnit = _selectedTimeOption == 'Hora' ? 'H' : 'D';
-        final String description = _descriptionController.text.trim();
         final int? rating = userSession.userRating;
 
         // Subir la imagen a Firebase Storage y obtener la URL de descarga
         String imageUrl = await uploadImageToFirebaseStorage(File(_image!.path));
 
-        // Almacenar la URL de descarga de la imagen en el campo "image" de la colección "items"
-        FirebaseFirestore.instance.collection('requests').add({
+        // Almacenar la URL de descarga de la imagen en el campo "image" de la colección "requests"
+        FirebaseFirestore.instance.collection('items_solicitados').add({
           'userId': userId,
           'name': title,
-          'price': price,
-          'time_unit': timeUnit,
-          'description': description,
+          'start_date': _startDateController.text,
+          'start_time': _startTimeController.text,
+          'end_date': _endDateController.text,
+          'end_time': _endTimeController.text,
           'rating': rating,
           'image': imageUrl,
         });
 
         print('Solicitud presionada');
-        print('userId: $userId, title: $title, price: $price, timeUnit: $timeUnit, description: $description');
+        print(
+            'userId: $userId, title: $title, startDate: ${_startDateController.text} ${_startTimeController.text}, endDate: ${_endDateController.text} ${_endTimeController.text}');
         print('imageUrl: $imageUrl');
 
         redirectToRequestPage();
@@ -150,91 +212,83 @@ class _AddRequestPageState extends State<AddRequestPage> {
                     ),
                   ),
                 ),
-                SizedBox(height: 60.0),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 80.0),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: SizedBox(
-                          height: 40.0,
-                          child: TextField(
-                            controller: _priceController,
-                            keyboardType: TextInputType.number,
-                            decoration: InputDecoration(
-                              labelText: 'Precio',
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(20.0),
-                              ),
-                              contentPadding: EdgeInsets.symmetric(horizontal: 10.0),
+                SizedBox(height: 30.0),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 40.0),
+                        child: TextField(
+                          controller: _startDateController,
+                          readOnly: true,
+                          onTap: selectStartDate,
+                          decoration: InputDecoration(
+                            labelText: 'Fecha inicial',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20.0),
                             ),
                           ),
                         ),
                       ),
-                      SizedBox(width: 50.0),
-                      Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10.0),
-                          border: Border.all(color: Colors.grey),
-                        ),
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 8.0),
-                          child: DropdownButton<String>(
-                            value: _selectedTimeOption,
-                            onChanged: (newValue) {
-                              setState(() {
-                                _selectedTimeOption = newValue;
-                              });
-                            },
-                            items: [
-                              DropdownMenuItem(
-                                value: 'Hora',
-                                child: Text('Hora'),
-                              ),
-                              DropdownMenuItem(
-                                value: 'Día',
-                                child: Text('Día'),
-                              ),
-                            ],
-                            underline: SizedBox.shrink(),
-                            icon: Icon(Icons.arrow_drop_down),
-                            iconSize: 24.0,
-                            elevation: 8,
-                            style: TextStyle(color: Colors.black),
-                            isDense: true,
+                    ),
+                    SizedBox(width: 5.0),
+                    Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 40.0),
+                        child: TextField(
+                          controller: _startTimeController,
+                          readOnly: true,
+                          onTap: selectStartTime,
+                          decoration: InputDecoration(
+                            labelText: 'Hora inicial',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20.0),
+                            ),
                           ),
                         ),
                       ),
-                    ],
-                  ),
-                ),
-                SizedBox(height: 50.0),
-                Text(
-                  'Descripción',
-                  style: TextStyle(
-                    fontSize: 20.0,
-                    fontWeight: FontWeight.bold,
-                  ),
+                    ),
+                  ],
                 ),
                 SizedBox(height: 30.0),
-                Container(
-                  width: 300.0,
-                  height: 180.0,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20.0),
-                    border: Border.all(color: Colors.grey),
-                  ),
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16.0),
-                    child: TextField(
-                      controller: _descriptionController,
-                      maxLines: 5,
-                      decoration: InputDecoration(
-                        border: InputBorder.none,
-                        hintText: 'Escribe la descripción aquí',
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 40.0),
+                        child: TextField(
+                          controller: _endDateController,
+                          readOnly: true,
+                          onTap: selectEndDate,
+                          decoration: InputDecoration(
+                            labelText: 'Fecha final',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20.0),
+                            ),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
+                    SizedBox(width: 10.0),
+                    Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 40.0),
+                        child: TextField(
+                          controller: _endTimeController,
+                          readOnly: true,
+                          onTap: selectEndTime,
+                          decoration: InputDecoration(
+                            labelText: 'Hora final',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20.0),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 SizedBox(height: 60.0),
                 Container(

@@ -7,18 +7,14 @@ import 'add_request_page.dart';
 import 'home_page.dart';
 
 class RequestPage extends StatefulWidget {
-  const RequestPage({super.key});
-
-
-
-
+  const RequestPage({Key? key}) : super(key: key);
 
   @override
   State<RequestPage> createState() => _RequestPageState();
 }
 
 class _RequestPageState extends State<RequestPage> {
-      int selectedIndex = 0;
+  int selectedIndex = 0;
   int count = 0;
   int clickCounter = 0;
 
@@ -26,12 +22,15 @@ class _RequestPageState extends State<RequestPage> {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
 
-    final screens = [const RequestPage(),const HomePage(), const RentPage()];
+    final screens = [const RequestPage(), const HomePage(), const RentPage()];
 
-     
     return Scaffold(
       appBar: AppBar(
-        title: Text('ListView Example'),
+        backgroundColor: colors.primary, // Color de fondo personalizado
+        title: Text('Solicitudes disponibles'),
+        centerTitle: false,
+        automaticallyImplyLeading: false, // Eliminar el botón de navegación de retroceso
+        actions: [], // Eliminar los elementos de acción
       ),
       body: Column(
         children: [
@@ -71,17 +70,22 @@ class _RequestPageState extends State<RequestPage> {
                       DocumentSnapshot document = snapshot.data!.docs[index];
                       Map<String, dynamic> itemData = document.data() as Map<String, dynamic>;
                       String itemName = itemData['name'];
-                      Timestamp itemFechai = itemData['fechai'];
-                      Timestamp itemFechaf = itemData['fechaf'];
+                      String startDateString = itemData['start_date'];
+                      String startTimeString = itemData['start_time'];
+                      String endDateString = itemData['end_date'];
+                      String endTimeString = itemData['end_time'];
                       int itemRating = itemData['rating'];
                       String imagePath = itemData['image'];
 
-                      DateTime dateTime = itemFechai.toDate();
-                      dateTime = dateTime.subtract(Duration(hours: 5));
-                      String formattedDate = DateFormat('dd/MM/yy - hh:mm a').format(dateTime);
-                      DateTime dateTimef = itemFechaf.toDate();
-                      dateTimef = dateTimef.subtract(Duration(hours: 5));
-                      String formattedDatef = DateFormat('dd/MM/yy - hh:mm a').format(dateTimef);
+                      DateTime startDate = DateFormat('dd/MM/yy').parse(startDateString);
+                      DateTime startTime = DateFormat('h:mm a').parse(startTimeString);
+                      DateTime endDate = DateFormat('dd/MM/yy').parse(endDateString);
+                      DateTime endTime = DateFormat('h:mm a').parse(endTimeString);
+
+                      String formattedStartDate =
+                          DateFormat('dd/MM/yy - hh:mm a').format(DateTime(startDate.year, startDate.month, startDate.day, startTime.hour, startTime.minute));
+                      String formattedEndDate =
+                          DateFormat('dd/MM/yy - hh:mm a').format(DateTime(endDate.year, endDate.month, endDate.day, endTime.hour, endTime.minute));
 
                       return Padding(
                         padding: EdgeInsets.symmetric(horizontal: 40.0), // Espacio de relleno alrededor del item
@@ -93,26 +97,38 @@ class _RequestPageState extends State<RequestPage> {
                           child: ListTile(
                             leading: CircleAvatar(
                               radius: 30.0, // Ajusta el tamaño según tus necesidades
-                              backgroundImage: AssetImage(imagePath),
+                              backgroundImage: NetworkImage(imagePath),
                             ),
                             title: Column(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                Text(itemName),
-                                Text(formattedDate),
-                                Text(formattedDatef),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: List.generate(itemRating, (index) {
-                                    return Icon(Icons.star, color: Colors.yellow);
-                                  }),
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(
+                                    itemName,
+                                    style: TextStyle(
+                                      fontSize: 18, // Tamaño de fuente personalizado
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                Text(formattedStartDate),
+                                Text(formattedEndDate),
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: List.generate(itemRating, (index) {
+                                      return Icon(Icons.star, color: Colors.yellow);
+                                    }),
+                                  ),
                                 ),
                               ],
                             ),
                             trailing: ElevatedButton(
                               onPressed: () {
-                                // Acción al presionar el botón "Rentar"
-                                print('Rentar presionado en el artículo $itemName');
+                                // Acción al presionar el botón "Ofertar"
+                                print('Ofertar presionado en el artículo $itemName');
                               },
                               child: Text('Ofertar'),
                               style: ElevatedButton.styleFrom(
@@ -163,8 +179,8 @@ class _RequestPageState extends State<RequestPage> {
           setState(() {
             selectedIndex = value;
             Navigator.push(
-            context,
-            PageRouteBuilder(
+              context,
+              PageRouteBuilder(
                 pageBuilder: (_, __, ___) => screens[value],
                 transitionsBuilder: (_, animation, __, child) {
                   return FadeTransition(
@@ -173,17 +189,16 @@ class _RequestPageState extends State<RequestPage> {
                   );
                 },
               ),
-        );
+            );
           });
         },
         elevation: 0,
         items: [
           BottomNavigationBarItem(
-            icon: const Icon(Icons.article,),
+            icon: const Icon(Icons.article),
             activeIcon: const Icon(Icons.article_outlined),
             label: 'Solicitudes',
             backgroundColor: colors.primary,
-            
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.home_outlined),
@@ -197,13 +212,8 @@ class _RequestPageState extends State<RequestPage> {
             label: 'Ofertas',
             backgroundColor: colors.tertiary,
           ),
-        
         ],
-        
       ),
     );
   }
 }
-
-
-
