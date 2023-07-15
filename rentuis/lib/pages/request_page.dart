@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import 'add_request_page.dart';
 import 'home_page.dart';
+import 'offers_page.dart';
 
 class RequestPage extends StatefulWidget {
   const RequestPage({Key? key}) : super(key: key);
@@ -127,8 +128,10 @@ class _RequestPageState extends State<RequestPage> {
                             ),
                             trailing: ElevatedButton(
                               onPressed: () {
-                                // Acción al presionar el botón "Ofertar"
-                                print('Ofertar presionado en el artículo $itemName');
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => OffersPage()),
+                                );
                               },
                               child: Text('Ofertar'),
                               style: ElevatedButton.styleFrom(
