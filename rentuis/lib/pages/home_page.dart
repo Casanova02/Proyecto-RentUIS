@@ -38,6 +38,10 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    final screens = [const RequestPage(),const HomePage(), const RentPage()];
+
     return Scaffold(
       appBar: AppBar(
         flexibleSpace: Container(
@@ -177,18 +181,27 @@ class _HomePageState extends State<HomePage> {
         currentIndex: 1,
         items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.article),
+            icon: const Icon(Icons.article,),
+            activeIcon: const Icon(Icons.article_outlined),
             label: 'Solicitudes',
+            backgroundColor: colors.primary,
+            
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
+            icon: const Icon(Icons.home_outlined),
+            activeIcon: const Icon(Icons.home),
             label: 'Inicio',
+            backgroundColor: colors.primary,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.monetization_on),
-            label: 'Rentas',
+            icon: const Icon(Icons.monetization_on),
+            activeIcon: const Icon(Icons.monetization_on_outlined),
+            label: 'Ofertas',
+            backgroundColor: colors.tertiary,
           ),
+        
         ],
+        
       ),
     );
   }
