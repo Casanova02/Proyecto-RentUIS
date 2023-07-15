@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:rentuis/pages/rents_page.dart';
 import 'package:intl/intl.dart';
 
+import 'add_request_page.dart';
 import 'home_page.dart';
 
 class RequestPage extends StatefulWidget {
@@ -27,7 +28,11 @@ class _RequestPageState extends State<RequestPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('ListView Example'),
+        backgroundColor: colors.primary, // Color de fondo personalizado
+        title: Text('Solicitudes disponibles'),
+        centerTitle: false,
+        automaticallyImplyLeading: false, // Eliminar el botón de navegación de retroceso
+        actions: [], // Eliminar los elementos de acción
       ),
       body: Column(
         children: [
@@ -67,17 +72,22 @@ class _RequestPageState extends State<RequestPage> {
                       DocumentSnapshot document = snapshot.data!.docs[index];
                       Map<String, dynamic> itemData = document.data() as Map<String, dynamic>;
                       String itemName = itemData['name'];
-                      Timestamp itemFechai = itemData['fechai'];
-                      Timestamp itemFechaf = itemData['fechaf'];
+                      String startDateString = itemData['start_date'];
+                      String startTimeString = itemData['start_time'];
+                      String endDateString = itemData['end_date'];
+                      String endTimeString = itemData['end_time'];
                       int itemRating = itemData['rating'];
                       String imagePath = itemData['image'];
 
-                      DateTime dateTime = itemFechai.toDate();
-                      dateTime = dateTime.subtract(Duration(hours: 5));
-                      String formattedDate = DateFormat('dd/MM/yy - hh:mm a').format(dateTime);
-                      DateTime dateTimef = itemFechaf.toDate();
-                      dateTimef = dateTimef.subtract(Duration(hours: 5));
-                      String formattedDatef = DateFormat('dd/MM/yy - hh:mm a').format(dateTimef);
+                      DateTime startDate = DateFormat('dd/MM/yy').parse(startDateString);
+                      DateTime startTime = DateFormat('h:mm a').parse(startTimeString);
+                      DateTime endDate = DateFormat('dd/MM/yy').parse(endDateString);
+                      DateTime endTime = DateFormat('h:mm a').parse(endTimeString);
+
+                      String formattedStartDate =
+                          DateFormat('dd/MM/yy - hh:mm a').format(DateTime(startDate.year, startDate.month, startDate.day, startTime.hour, startTime.minute));
+                      String formattedEndDate =
+                          DateFormat('dd/MM/yy - hh:mm a').format(DateTime(endDate.year, endDate.month, endDate.day, endTime.hour, endTime.minute));
 
                       return Padding(
                         padding: EdgeInsets.symmetric(horizontal: 40.0),
@@ -94,14 +104,26 @@ class _RequestPageState extends State<RequestPage> {
                             title: Column(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                Text(itemName),
-                                Text(formattedDate),
-                                Text(formattedDatef),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: List.generate(itemRating, (index) {
-                                    return Icon(Icons.star, color: Colors.yellow);
-                                  }),
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(
+                                    itemName,
+                                    style: TextStyle(
+                                      fontSize: 18, // Tamaño de fuente personalizado
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                Text(formattedStartDate),
+                                Text(formattedEndDate),
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: List.generate(itemRating, (index) {
+                                      return Icon(Icons.star, color: Colors.yellow);
+                                    }),
+                                  ),
                                 ),
                               ],
                             ),
@@ -165,7 +187,7 @@ class _RequestPageState extends State<RequestPage> {
         elevation: 0,
         items: [
           BottomNavigationBarItem(
-            icon: const Icon(Icons.article,),
+            icon: const Icon(Icons.article),
             activeIcon: const Icon(Icons.article_outlined),
             label: 'Solicitudes',
             backgroundColor: colors.primary,
