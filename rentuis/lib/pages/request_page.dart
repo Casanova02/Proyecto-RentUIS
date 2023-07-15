@@ -6,18 +6,16 @@ import 'package:intl/intl.dart';
 import 'home_page.dart';
 
 class RequestPage extends StatefulWidget {
-  const RequestPage({super.key});
+  final String userEmail;
 
-
-
-
+  RequestPage({required this.userEmail});
 
   @override
   State<RequestPage> createState() => _RequestPageState();
 }
 
 class _RequestPageState extends State<RequestPage> {
-      int selectedIndex = 0;
+  int selectedIndex = 0;
   int count = 0;
   int clickCounter = 0;
 
@@ -25,9 +23,8 @@ class _RequestPageState extends State<RequestPage> {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
 
-    final screens = [const RequestPage(),const HomePage(), const RentPage()];
+    final screens = [RequestPage(userEmail: widget.userEmail), HomePage(userEmail: widget.userEmail), RentPage(userEmail: widget.userEmail)];
 
-     
     return Scaffold(
       appBar: AppBar(
         title: Text('ListView Example'),
@@ -83,15 +80,15 @@ class _RequestPageState extends State<RequestPage> {
                       String formattedDatef = DateFormat('dd/MM/yy - hh:mm a').format(dateTimef);
 
                       return Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 40.0), // Espacio de relleno alrededor del item
+                        padding: EdgeInsets.symmetric(horizontal: 40.0),
                         child: Card(
-                          elevation: 4, // Elevación para crear la sombra
+                          elevation: 4,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15.0), // Bordes redondeados
+                            borderRadius: BorderRadius.circular(15.0),
                           ),
                           child: ListTile(
                             leading: CircleAvatar(
-                              radius: 30.0, // Ajusta el tamaño según tus necesidades
+                              radius: 30.0,
                               backgroundImage: AssetImage(imagePath),
                             ),
                             title: Column(
@@ -110,18 +107,18 @@ class _RequestPageState extends State<RequestPage> {
                             ),
                             trailing: ElevatedButton(
                               onPressed: () {
-                                // Acción al presionar el botón "Rentar"
+
                                 print('Rentar presionado en el artículo $itemName');
                               },
                               child: Text('Ofertar'),
                               style: ElevatedButton.styleFrom(
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(15.0), // Bordes redondeados
+                                  borderRadius: BorderRadius.circular(15.0),
                                 ),
                               ),
-                            ), // Icono a la derecha
+                            ),
                             onTap: () {
-                              // Acción al hacer clic en un elemento
+
                               print('Elemento $index seleccionado');
                             },
                           ),
@@ -139,11 +136,11 @@ class _RequestPageState extends State<RequestPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Acción al presionar el botón de acción flotante
+
           print('Botón de acción flotante presionado');
         },
         child: Icon(Icons.add),
-        backgroundColor: Colors.blue, // Color azul
+        backgroundColor: Colors.blue,
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.shifting,
@@ -152,8 +149,8 @@ class _RequestPageState extends State<RequestPage> {
           setState(() {
             selectedIndex = value;
             Navigator.push(
-            context,
-            PageRouteBuilder(
+              context,
+              PageRouteBuilder(
                 pageBuilder: (_, __, ___) => screens[value],
                 transitionsBuilder: (_, animation, __, child) {
                   return FadeTransition(
@@ -162,7 +159,7 @@ class _RequestPageState extends State<RequestPage> {
                   );
                 },
               ),
-        );
+            );
           });
         },
         elevation: 0,
@@ -172,7 +169,6 @@ class _RequestPageState extends State<RequestPage> {
             activeIcon: const Icon(Icons.article_outlined),
             label: 'Solicitudes',
             backgroundColor: colors.primary,
-            
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.home_outlined),
@@ -186,13 +182,8 @@ class _RequestPageState extends State<RequestPage> {
             label: 'Ofertas',
             backgroundColor: colors.tertiary,
           ),
-        
         ],
-        
       ),
     );
   }
 }
-
-
-

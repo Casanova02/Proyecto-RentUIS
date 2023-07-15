@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:rentuis/pages/rents_page.dart';
+import 'package:rentuis/pages/request_page.dart';
 
 class HomePage extends StatefulWidget {
   final String userEmail;
@@ -13,6 +15,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   late String userFullName;
   late String userImageUrl;
+  int selectedIndex = 1;
 
   @override
   void initState() {
@@ -30,7 +33,7 @@ class _HomePageState extends State<HomePage> {
       final userData = userSnapshot.docs.first.data();
       setState(() {
         userFullName = '${userData['nombres']}';
-        //asignar la ruta de la imagen de perfil
+        // Aquí puedes asignar la ruta de la imagen de perfil si está disponible en la base de datos
         // userImageUrl = userData['rutaImagenPerfil'];
       });
     }
@@ -39,8 +42,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-
-    final screens = [const RequestPage(),const HomePage(), const RentPage()];
+    final screens = [RequestPage(userEmail: widget.userEmail), HomePage(userEmail: widget.userEmail), RentPage(userEmail: widget.userEmail)];
 
     return Scaffold(
       appBar: AppBar(
@@ -82,7 +84,7 @@ class _HomePageState extends State<HomePage> {
                 children: [
                   CircleAvatar(
                     radius: 32.0,
-                    backgroundImage: AssetImage('assets/profile_placeholder.png'), // Utilizar userImageUrl
+                    backgroundImage: AssetImage('assets/profile_placeholder.jpg'), // Utiliza userImageUrl en lugar de 'assets/profile_placeholder.png' si tienes la ruta de la imagen de perfil
                   ),
                   SizedBox(width: 16.0),
                   Row(
@@ -178,14 +180,32 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 1,
+        type: BottomNavigationBarType.shifting,
+        currentIndex: selectedIndex,
+        onTap: (value) {
+          setState(() {
+            selectedIndex = value;
+            Navigator.push(
+              context,
+              PageRouteBuilder(
+                pageBuilder: (_, __, ___) => screens[value],
+                transitionsBuilder: (_, animation, __, child) {
+                  return FadeTransition(
+                    opacity: animation,
+                    child: child,
+                  );
+                },
+              ),
+            );
+          });
+        },
+        elevation: 0,
         items: [
           BottomNavigationBarItem(
-            icon: const Icon(Icons.article,),
+            icon: const Icon(Icons.article),
             activeIcon: const Icon(Icons.article_outlined),
             label: 'Solicitudes',
             backgroundColor: colors.primary,
-            
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.home_outlined),
@@ -196,12 +216,10 @@ class _HomePageState extends State<HomePage> {
           BottomNavigationBarItem(
             icon: const Icon(Icons.monetization_on),
             activeIcon: const Icon(Icons.monetization_on_outlined),
-            label: 'Ofertas',
+            label: 'Rentas',
             backgroundColor: colors.tertiary,
           ),
-        
         ],
-        
       ),
     );
   }

@@ -7,7 +7,9 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
 class AddOfferPage extends StatefulWidget {
-  const AddOfferPage({Key? key}) : super(key: key);
+  final String userEmail;
+
+  const AddOfferPage({Key? key, required this.userEmail}) : super(key: key);
 
   @override
   _AddOfferPageState createState() => _AddOfferPageState();
@@ -49,12 +51,14 @@ class _AddOfferPageState extends State<AddOfferPage> {
 
     return await taskSnapshot.ref.getDownloadURL();
   }
+
   void redirectToRentsPage() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => RentPage()),
+      MaterialPageRoute(builder: (context) => RentPage(userEmail: widget.userEmail)),
     );
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
