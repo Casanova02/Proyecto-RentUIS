@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:rentuis/pages/rents_page.dart';
 import 'package:intl/intl.dart';
 
+import 'add_request_page.dart';
 import 'home_page.dart';
 
 class RequestPage extends StatefulWidget {
@@ -139,8 +140,18 @@ class _RequestPageState extends State<RequestPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Acción al presionar el botón de acción flotante
-          print('Botón de acción flotante presionado');
+          Navigator.push(
+            context,
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) => AddRequestPage(),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                return FadeTransition(
+                  opacity: animation,
+                  child: child,
+                );
+              },
+            ),
+          );
         },
         child: Icon(Icons.add),
         backgroundColor: Colors.blue, // Color azul

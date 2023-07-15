@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:rentuis/pages/rents_page.dart';
+
+import 'package:rentuis/pages/request_page.dart';
 import 'package:rentuis/pages/user_session.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
-class AddOfferPage extends StatefulWidget {
-  const AddOfferPage({Key? key}) : super(key: key);
+class AddRequestPage extends StatefulWidget {
+  const AddRequestPage({Key? key}) : super(key: key);
 
   @override
-  _AddOfferPageState createState() => _AddOfferPageState();
+  _AddRequestPageState createState() => _AddRequestPageState();
 }
 
-class _AddOfferPageState extends State<AddOfferPage> {
+class _AddRequestPageState extends State<AddRequestPage> {
   final UserSession userSession = UserSession();
   TextEditingController _titleController = TextEditingController();
   TextEditingController _priceController = TextEditingController();
@@ -50,10 +51,10 @@ class _AddOfferPageState extends State<AddOfferPage> {
     return await taskSnapshot.ref.getDownloadURL();
   }
 
-  void redirectToRentsPage() {
+  void redirectToRequestPage() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => RentPage()),
+      MaterialPageRoute(builder: (context) => RequestPage()),
     );
   }
 
@@ -75,9 +76,9 @@ class _AddOfferPageState extends State<AddOfferPage> {
     );
   }
 
-  void addOffer() async {
+  void addRequest() async {
     if (_image == null || _titleController.text.isEmpty || _priceController.text.isEmpty || _selectedTimeOption == null || _descriptionController.text.isEmpty) {
-      showErrorMessage('Debes llenar todos los campos para añadir una oferta.');
+      showErrorMessage('Debes llenar todos los campos para añadir una solicitud.');
     } else {
       if (userSession.userId != null) {
         final String userId = userSession.userId!;
@@ -91,7 +92,7 @@ class _AddOfferPageState extends State<AddOfferPage> {
         String imageUrl = await uploadImageToFirebaseStorage(File(_image!.path));
 
         // Almacenar la URL de descarga de la imagen en el campo "image" de la colección "items"
-        FirebaseFirestore.instance.collection('items').add({
+        FirebaseFirestore.instance.collection('requests').add({
           'userId': userId,
           'name': title,
           'price': price,
@@ -101,14 +102,14 @@ class _AddOfferPageState extends State<AddOfferPage> {
           'image': imageUrl,
         });
 
-        print('Rentar presionado');
+        print('Solicitud presionada');
         print('userId: $userId, title: $title, price: $price, timeUnit: $timeUnit, description: $description');
         print('imageUrl: $imageUrl');
 
-        redirectToRentsPage();
+        redirectToRequestPage();
       } else {
         // No se encontró un usuario autenticado, muestra un mensaje de error o redirige a la página de inicio de sesión
-        showErrorMessage('Debes iniciar sesión para rentar.');
+        showErrorMessage('Debes iniciar sesión para añadir una solicitud.');
       }
     }
   }
@@ -117,7 +118,7 @@ class _AddOfferPageState extends State<AddOfferPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Añadir oferta'),
+        title: Text('Añadir solicitud'),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -142,7 +143,7 @@ class _AddOfferPageState extends State<AddOfferPage> {
                   child: TextField(
                     controller: _titleController,
                     decoration: InputDecoration(
-                      labelText: 'Título del artículo',
+                      labelText: 'Título de la solicitud',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(20.0),
                       ),
@@ -240,9 +241,9 @@ class _AddOfferPageState extends State<AddOfferPage> {
                   width: 150.0,
                   padding: EdgeInsets.all(20.0),
                   child: ElevatedButton(
-                    onPressed: addOffer,
+                    onPressed: addRequest,
                     child: Text(
-                      'Rentar',
+                      'Añadir',
                       style: TextStyle(fontSize: 18.0),
                     ),
                     style: ElevatedButton.styleFrom(
