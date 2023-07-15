@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:rentuis/pages/rents_page.dart';
 import 'package:intl/intl.dart';
-
 import 'add_request_page.dart';
 import 'home_page.dart';
 
@@ -32,7 +31,7 @@ class _RequestPageState extends State<RequestPage> {
         title: Text('Solicitudes disponibles'),
         centerTitle: false,
         automaticallyImplyLeading: false, // Eliminar el botón de navegación de retroceso
-        actions: [], // Eliminar los elementos de acción
+        actions: [],
       ),
       body: Column(
         children: [
@@ -85,9 +84,10 @@ class _RequestPageState extends State<RequestPage> {
                       DateTime endTime = DateFormat('h:mm a').parse(endTimeString);
 
                       String formattedStartDate =
-                          DateFormat('dd/MM/yy - hh:mm a').format(DateTime(startDate.year, startDate.month, startDate.day, startTime.hour, startTime.minute));
+                      DateFormat('dd/MM/yy - hh:mm a').format(DateTime(startDate.year, startDate.month, startDate.day, startTime.hour, startTime.minute));
                       String formattedEndDate =
-                          DateFormat('dd/MM/yy - hh:mm a').format(DateTime(endDate.year, endDate.month, endDate.day, endTime.hour, endTime.minute));
+                      DateFormat('dd/MM/yy - hh:mm a').format(DateTime(endDate.year, endDate.month, endDate.day, endTime.hour, endTime.minute));
+
 
                       return Padding(
                         padding: EdgeInsets.symmetric(horizontal: 40.0),
@@ -99,7 +99,7 @@ class _RequestPageState extends State<RequestPage> {
                           child: ListTile(
                             leading: CircleAvatar(
                               radius: 30.0,
-                              backgroundImage: AssetImage(imagePath),
+                              backgroundImage: NetworkImage(imagePath),
                             ),
                             title: Column(
                               crossAxisAlignment: CrossAxisAlignment.center,
@@ -130,7 +130,7 @@ class _RequestPageState extends State<RequestPage> {
                             trailing: ElevatedButton(
                               onPressed: () {
 
-                                print('Rentar presionado en el artículo $itemName');
+                                print('Ofertar presionado en el artículo $itemName');
                               },
                               child: Text('Ofertar'),
                               style: ElevatedButton.styleFrom(
@@ -159,7 +159,18 @@ class _RequestPageState extends State<RequestPage> {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
 
-          print('Botón de acción flotante presionado');
+          Navigator.push(
+            context,
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) => AddRequestPage(userEmail: widget.userEmail),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                return FadeTransition(
+                  opacity: animation,
+                  child: child,
+                );
+              },
+            ),
+          );
         },
         child: Icon(Icons.add),
         backgroundColor: Colors.blue,
@@ -187,7 +198,7 @@ class _RequestPageState extends State<RequestPage> {
         elevation: 0,
         items: [
           BottomNavigationBarItem(
-            icon: const Icon(Icons.article),
+            icon: const Icon(Icons.article,),
             activeIcon: const Icon(Icons.article_outlined),
             label: 'Solicitudes',
             backgroundColor: colors.primary,

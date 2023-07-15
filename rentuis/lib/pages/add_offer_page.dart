@@ -59,6 +59,66 @@ class _AddOfferPageState extends State<AddOfferPage> {
     );
   }
 
+  void showErrorMessage(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Error'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            child: Text('Cerrar'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  void addOffer() async {
+    if (_image == null ||
+        _titleController.text.isEmpty ||
+        _priceController.text.isEmpty ||
+        _selectedTimeOption == null ||
+        _descriptionController.text.isEmpty) {
+      showErrorMessage('Debes llenar todos los campos para añadir una oferta.');
+    } else {
+      if (userSession.userId != null) {
+        final String userId = userSession.userId!;
+        final String title = _titleController.text.trim();
+        final int price = int.parse(_priceController.text.trim());
+        final String timeUnit = _selectedTimeOption == 'Hora' ? 'H' : 'D';
+        final String description = _descriptionController.text.trim();
+        final int? rating = userSession.userRating;
+
+        // Subir la imagen a Firebase Storage y obtener la URL de descarga
+        String imageUrl = await uploadImageToFirebaseStorage(File(_image!.path));
+
+        // Almacenar la URL de descarga de la imagen en el campo "image" de la colección "items"
+        FirebaseFirestore.instance.collection('items').add({
+          'userId': userId,
+          'name': title,
+          'price': price,
+          'time_unit': timeUnit,
+          'description': description,
+          'rating': rating,
+          'image': imageUrl,
+        });
+
+        print('Rentar presionado');
+        print('userId: $userId, title: $title, price: $price, timeUnit: $timeUnit, description: $description');
+        print('imageUrl: $imageUrl');
+
+        redirectToRentsPage();
+      } else {
+        // No se encontró un usuario autenticado, muestra un mensaje de error o redirige a la página de inicio de sesión
+        showErrorMessage('Debes iniciar sesión para rentar.');
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -79,7 +139,9 @@ class _AddOfferPageState extends State<AddOfferPage> {
                   },
                   child: CircleAvatar(
                     radius: 100.0,
-                    backgroundImage: _image != null ? FileImage(File(_image!.path)) as ImageProvider<Object> : AssetImage('assets/profile_placeholder.jpg'),
+                    backgroundImage: _image != null
+                        ? FileImage(File(_image!.path)) as ImageProvider<Object>
+                        : AssetImage('assets/profile_placeholder.jpg'),
                   ),
                 ),
                 SizedBox(height: 30.0),

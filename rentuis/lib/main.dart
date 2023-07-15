@@ -19,7 +19,7 @@ class RentUISApp extends StatelessWidget {
       debugShowCheckedModeBanner:false,
       title: 'RentUIS',
       theme: ThemeData(
-        primarySwatch: Colors.lightGreen, 
+        primarySwatch: Colors.lightGreen,
         colorScheme: ColorScheme.fromSwatch().copyWith(
           secondary: Colors.lightGreenAccent,
         ),
