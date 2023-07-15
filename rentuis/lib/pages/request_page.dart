@@ -4,7 +4,6 @@ import 'package:rentuis/pages/rents_page.dart';
 import 'package:intl/intl.dart';
 import 'add_request_page.dart';
 import 'home_page.dart';
-import 'offers_page.dart';
 
 class RequestPage extends StatefulWidget {
   final String userEmail;
