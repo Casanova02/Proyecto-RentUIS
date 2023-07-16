@@ -4,6 +4,7 @@ import 'package:rentuis/pages/rents_page.dart';
 import 'package:rentuis/pages/request_page.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
+
 class HomePage extends StatefulWidget {
   final String userEmail;
 
@@ -15,8 +16,8 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   String? userFullName;
-  int selectedIndex = 1;
   String? imagePath;
+  int selectedIndex = 1;
 
   @override
   void initState() {
@@ -36,8 +37,6 @@ class _HomePageState extends State<HomePage> {
         userFullName = '${userData['nombres']}';
         imagePath = '${userData['image']}';
       });
-
-      // Obtener el token de registro FCM
       final token = await FirebaseMessaging.instance.getToken();
 
       // Guardar el token en la base de datos si no es nulo
@@ -64,7 +63,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         flexibleSpace: Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
                 Colors.lightBlueAccent,
@@ -75,16 +74,16 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
         ),
-        title: const Text('RentUIS'),
+        title: Text('RentUIS'),
       ),
       body: Center(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 16.0),
+            SizedBox(height: 16.0),
             Container(
               width: 370,
-              padding: const EdgeInsets.all(16.0),
+              padding: EdgeInsets.all(16.0),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(30),
@@ -92,7 +91,7 @@ class _HomePageState extends State<HomePage> {
                   BoxShadow(
                     blurRadius: 2,
                     spreadRadius: 2,
-                    offset: const Offset(1, 1),
+                    offset: Offset(1, 1),
                     color: Colors.grey.withOpacity(0.2),
                   ),
                 ],
@@ -107,7 +106,7 @@ class _HomePageState extends State<HomePage> {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Hola, ',
                         style: TextStyle(
                           fontSize: 18.0,
@@ -117,7 +116,7 @@ class _HomePageState extends State<HomePage> {
                       SizedBox(height: 4.0),
                       Text(
                         userFullName ?? '',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 18.0,
                           fontWeight: FontWeight.bold,
                         ),
@@ -127,10 +126,10 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             ),
-            const SizedBox(height: 16.0),
+            SizedBox(height: 16.0),
             Container(
               width: 370,
-              padding: const EdgeInsets.all(16.0),
+              padding: EdgeInsets.all(16.0),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(30),
@@ -138,12 +137,12 @@ class _HomePageState extends State<HomePage> {
                   BoxShadow(
                     blurRadius: 2,
                     spreadRadius: 2,
-                    offset: const Offset(1, 1),
+                    offset: Offset(1, 1),
                     color: Colors.grey.withOpacity(0.2),
                   ),
                 ],
               ),
-              child: const Row(
+              child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Icon(
@@ -180,11 +179,10 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             ),
-            //Contenedor con el historial
             const SizedBox(height: 16.0),
             Container(
               width: 370,
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0,vertical: 20.0),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(30),
@@ -203,16 +201,17 @@ class _HomePageState extends State<HomePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    padding: const EdgeInsets.only(top: 5.0, bottom: 20),
-                    child: const Text(
+                    padding: const EdgeInsets.only(top:5.0,bottom:20),
+                    child:const Text(
                       "Tus solicitudes",
                       style: TextStyle(
-                        color: Colors.black,
+                        color:Colors.black,
                         fontWeight: FontWeight.bold,
                         fontSize: 20,
                       ),
                     ),
                   ),
+
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -284,94 +283,94 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-
-  Widget crearRecuadro({required int index}) {
-    return FutureBuilder<QuerySnapshot>(
-      future: FirebaseFirestore.instance.collection('items').limit(3).get(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        } else if (snapshot.hasError) {
-          return const Center(
-            child: Text('Error al cargar los datos'),
-          );
-        } else if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
-          // Verificar que el índice esté dentro del rango de documentos disponibles
-          if (index >= 0 && index < snapshot.data!.docs.length) {
-            var document = snapshot.data!.docs[index];
-            String imageUrl = document['image'];
-            String itemName = document['name'];
-            return Column(
-              children: [
-                Stack(
-                  children: [
-                    DecoratedBox(
+}
+Widget crearRecuadro({required int index}) {
+  return FutureBuilder<QuerySnapshot>(
+    future: FirebaseFirestore.instance.collection('items').limit(3).get(),
+    builder: (context, snapshot) {
+      if (snapshot.connectionState == ConnectionState.waiting) {
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
+      } else if (snapshot.hasError) {
+        return const Center(
+          child: Text('Error al cargar los datos'),
+        );
+      } else if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
+        // Verificar que el índice esté dentro del rango de documentos disponibles
+        if (index >= 0 && index < snapshot.data!.docs.length) {
+          var document = snapshot.data!.docs[index];
+          String imageUrl = document['image'];
+          String itemName = document['name'];
+          return Column(
+            children: [
+              Stack(
+                children: [
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [Colors.lightBlueAccent, Colors.lightGreen],
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Container(
+                      width: 100,
+                      height: 100,
+                    ),
+                  ),
+                  Positioned(
+                    top: 10,
+                    left: 10,
+                    child: Container(
+                      width: 80,
+                      height: 80,
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [Colors.lightBlueAccent, Colors.lightGreen],
-                        ),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Container(
-                        width: 100,
-                        height: 100,
-                      ),
-                    ),
-                    Positioned(
-                      top: 10,
-                      left: 10,
-                      child: Container(
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: Colors.black,
-                            width: 3,
-                          ),
-                        ),
-                        child: CircleAvatar(
-                          radius: 40,
-                          backgroundColor: Colors.white,
-                          backgroundImage: imageUrl != null ? NetworkImage(imageUrl) : null,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.black,
+                          width: 3,
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                if (imageUrl != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8.0),
-                    child: Text(
-                      itemName,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
+                      child: CircleAvatar(
+                        radius: 40,
+                        backgroundColor: Colors.white,
+                        backgroundImage: imageUrl != null ? NetworkImage(imageUrl) : null,
                       ),
                     ),
                   ),
-              ],
-            );
-          }
+                ],
+              ),
+              if (imageUrl != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Text(
+                    itemName,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+            ],
+          );
         }
+      }
 
-        // Mostrar el contenedor verde sin la imagen si no se encontró el documento o el campo "imageUrl" es null
-        return Container(
-          width: 100,
-          height: 100,
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Colors.lightBlueAccent, Colors.lightGreen],
-            ),
-            borderRadius: BorderRadius.circular(10),
+      // Mostrar el contenedor verde sin la imagen si no se encontró el documento o el campo "imageUrl" es null
+      return Container(
+        width: 100,
+        height: 100,
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Colors.lightBlueAccent, Colors.lightGreen],
           ),
-        );
-      },
-    );
-  }
+          borderRadius: BorderRadius.circular(10),
+        ),
+      );
+    },
+  );
 }
+

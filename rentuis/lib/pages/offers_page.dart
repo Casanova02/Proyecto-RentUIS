@@ -4,7 +4,6 @@ import 'add_offer_page.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-
 class OffersPage extends StatefulWidget {
   final String userEmail;
 
@@ -35,7 +34,8 @@ class _OffersPageState extends State<OffersPage> {
       userId = userDoc.get('id');
       _getUserOffers();
     } else {
-      print('No se encontró un usuario con el correo electrónico proporcionado.');
+      print(
+          'No se encontró un usuario con el correo electrónico proporcionado.');
     }
   }
 
@@ -48,7 +48,8 @@ class _OffersPageState extends State<OffersPage> {
           .then((QuerySnapshot snapshot) {
         setState(() {
           userOffers = snapshot.docs
-              .map((DocumentSnapshot document) => document.data() as Map<String, dynamic>)
+              .map((DocumentSnapshot document) =>
+          document.data() as Map<String, dynamic>)
               .toList();
         });
       }).catchError((error) {
@@ -58,34 +59,37 @@ class _OffersPageState extends State<OffersPage> {
       print('No se pudo obtener el ID del usuario.');
     }
   }
+
   Future<void> enviarNotificacionPush(String token) async {
-  final url = Uri.parse('https://fcm.googleapis.com/fcm/send');
+    final url = Uri.parse('https://fcm.googleapis.com/fcm/send');
 
-  final headers = {
-    'Content-Type': 'application/json',
-    'Authorization': 'key=rentuisdatabase', // Reemplaza con tu clave del servidor de FCM
-  };
+    final headers = {
+      'Content-Type': 'application/json',
+      'Authorization': 'key=rentuisdatabase',
+      // Reemplaza con tu clave del servidor de FCM
+    };
 
-  final body = {
-    'notification': {
-      'title': 'Oferta seleccionada',
-      'body': 'Tu oferta ha sido seleccionada con éxito.',
-    },
-    'to': token,
-  };
+    final body = {
+      'notification': {
+        'title': 'Oferta seleccionada',
+        'body': 'Tu oferta ha sido seleccionada con éxito.',
+      },
+      'to': token,
+    };
 
-  final response = await http.post(
-    url,
-    headers: headers,
-    body: jsonEncode(body),
-  );
+    final response = await http.post(
+      url,
+      headers: headers,
+      body: jsonEncode(body),
+    );
 
-  if (response.statusCode == 200) {
-    print('Notificación push enviada correctamente');
-  } else {
-    print('Error al enviar la notificación push: ${response.statusCode}');
+    if (response.statusCode == 200) {
+      print('Notificación push enviada correctamente');
+    } else {
+      print('Error al enviar la notificación push: ${response.statusCode}');
+    }
   }
-}
+
   void _showSuccessNotification() {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -93,6 +97,7 @@ class _OffersPageState extends State<OffersPage> {
       ),
     );
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -131,7 +136,8 @@ class _OffersPageState extends State<OffersPage> {
               PageRouteBuilder(
                 pageBuilder: (context, animation, secondaryAnimation) =>
                     AddOfferPage(userEmail: widget.userEmail),
-                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                transitionsBuilder: (context, animation, secondaryAnimation,
+                    child) {
                   return FadeTransition(
                     opacity: animation,
                     child: child,
@@ -152,7 +158,7 @@ class _OffersPageState extends State<OffersPage> {
     String itemName = offerData['name'];
     int itemPrice = offerData['price'];
     String itemTimeUnit = offerData['time_unit'];
-    int itemRating = offerData['rating'];
+    int? itemRating = offerData['rating']; // Asegurarse de que itemRating pueda ser nulo
     String imagePath = offerData['image'];
 
     return Padding(
@@ -186,17 +192,16 @@ class _OffersPageState extends State<OffersPage> {
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(itemRating, (index) {
+                children: List.generate(itemRating ?? 0, (index) {
                   return Icon(Icons.star, color: Colors.yellow);
                 }),
               ),
             ],
           ),
           trailing: Container(
-            constraints: BoxConstraints(maxWidth: 110.0), // Establecer un ancho máximo
+            constraints: BoxConstraints(maxWidth: 110.0),
             child: ElevatedButton(
               onPressed: () {
-                // Acción al seleccionar la oferta
                 _showSuccessNotification();
                 print('Oferta seleccionada: $itemName');
               },
@@ -209,7 +214,6 @@ class _OffersPageState extends State<OffersPage> {
             ),
           ),
           onTap: () {
-            // Acción al hacer clic en una oferta
             print('Oferta $itemName seleccionada');
           },
         ),

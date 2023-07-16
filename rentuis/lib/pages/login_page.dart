@@ -7,7 +7,6 @@ import 'package:rentuis/pages/password_recovery_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
-
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
 
@@ -79,27 +78,28 @@ class _LoginPageState extends State<LoginPage> {
       );
     }
   }
-void signInUser(BuildContext context) async {
-  try {
-    final String email = emailController.text.trim();
-    final String password = passwordController.text.trim();
+  void signInUser(BuildContext context) async {
+    try {
+      final String email = emailController.text.trim();
+      final String password = passwordController.text.trim();
 
-    UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-      email: email,
-      password: password,
-    );
+      UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
 
-    // El usuario ha iniciado sesión correctamente, ahora puedes obtener el token de FCM
-    String? token = await FirebaseMessaging.instance.getToken();
-    print('Token de FCM: $token');
+      // El usuario ha iniciado sesión correctamente, ahora puedes obtener el token de FCM
+      String? token = await FirebaseMessaging.instance.getToken();
+      print('Token de FCM: $token');
 
-    // Guarda el token en tu base de datos o utilízalo para enviar notificaciones push
+      // Guarda el token en tu base de datos o utilízalo para enviar notificaciones push
 
-    
-  } catch (e) {
-    print('Error al iniciar sesión: $e');
+
+    } catch (e) {
+      print('Error al iniciar sesión: $e');
+    }
   }
-}
+
   void navigateToRegistration(BuildContext context) {
     Navigator.push(
       context,
