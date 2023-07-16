@@ -15,8 +15,8 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   String? userFullName;
-  String? userImageUrl;
   int selectedIndex = 1;
+  String? imagePath;
 
   @override
   void initState() {
@@ -34,8 +34,7 @@ class _HomePageState extends State<HomePage> {
       final userData = userSnapshot.docs.first.data();
       setState(() {
         userFullName = '${userData['nombres']}';
-        // Aquí puedes asignar la ruta de la imagen de perfil si está disponible en la base de datos
-        // userImageUrl = userData['rutaImagenPerfil'];
+        imagePath = '${userData['image']}';
       });
 
       // Obtener el token de registro FCM
@@ -100,9 +99,9 @@ class _HomePageState extends State<HomePage> {
               ),
               child: Row(
                 children: [
-                  const CircleAvatar(
+                  CircleAvatar(
                     radius: 32.0,
-                    backgroundImage: AssetImage('assets/profile_placeholder.jpg'), // Utiliza userImageUrl en lugar de 'assets/profile_placeholder.png' si tienes la ruta de la imagen de perfil
+                    backgroundImage: imagePath != null ? NetworkImage(imagePath!) : null,
                   ),
                   SizedBox(width: 16.0),
                   Row(
@@ -185,7 +184,7 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(height: 16.0),
             Container(
               width: 370,
-              padding: const EdgeInsets.symmetric(horizontal: 16.0,vertical: 20.0),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(30),
@@ -204,17 +203,16 @@ class _HomePageState extends State<HomePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    padding: const EdgeInsets.only(top:5.0,bottom:20),
-                    child:const Text(
-                    "Tus solicitudes",
-                    style: TextStyle(
-                      color:Colors.black,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20,
+                    padding: const EdgeInsets.only(top: 5.0, bottom: 20),
+                    child: const Text(
+                      "Tus solicitudes",
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                      ),
                     ),
                   ),
-                  ),
-
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -376,5 +374,4 @@ class _HomePageState extends State<HomePage> {
       },
     );
   }
-
 }

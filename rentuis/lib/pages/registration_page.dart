@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
-
+import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 class RegistrationPage extends StatefulWidget {
   @override
   _RegistrationPageState createState() => _RegistrationPageState();
@@ -19,6 +19,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
   final TextEditingController numeroTelefonoController = TextEditingController();
   String carreraValue = '';
   File? profileImage;
+  XFile? _image;
 
   List<String> carreraOptions = [
     'Biología',
@@ -95,6 +96,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
       // Guardar la información del usuario en Firestore
       FirebaseFirestore firestore = FirebaseFirestore.instance;
       var usuarioRef = firestore.collection('usuarios').doc(userId);
+      String imageUrl = await uploadImageToFirebaseStorage(File(_image!.path));
 
       await usuarioRef.set({
         'id': userId,
@@ -105,6 +107,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
         'carrera': carreraValue,
         'contraseña': contrasenaController.text,
         'rating':5,
+        'image': imageUrl,
       });
 
       // Mostrar mensaje de éxito y redirigir a la página de inicio de sesión
@@ -124,14 +127,24 @@ class _RegistrationPageState extends State<RegistrationPage> {
     );
   }
 
-  void _pickImage(ImageSource source) async {
-    final pickedFile = await ImagePicker().pickImage(source: source);
+  Future<void> pickImage(ImageSource source) async {
+    XFile? imageFile = await ImagePicker().pickImage(source: source);
+    if (imageFile != null) {
+      setState(() {
+        _image = imageFile;
+      });
+    }
+  }
+    Future<String> uploadImageToFirebaseStorage(File file) async {
+    firebase_storage.Reference ref = firebase_storage.FirebaseStorage.instance
+        .ref()
+        .child('images')
+        .child('${DateTime.now().millisecondsSinceEpoch}.jpg');
 
-    setState(() {
-      if (pickedFile != null) {
-        profileImage = File(pickedFile.path);
-      }
-    });
+    firebase_storage.UploadTask uploadTask = ref.putFile(file);
+    firebase_storage.TaskSnapshot taskSnapshot = await uploadTask;
+
+    return await taskSnapshot.ref.getDownloadURL();
   }
 
   @override
@@ -173,7 +186,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                 GestureDetector(
                                   child: Text('Galería'),
                                   onTap: () {
-                                    _pickImage(ImageSource.gallery);
+                                    pickImage(ImageSource.gallery);
                                     Navigator.of(context).pop();
                                   },
                                 ),
@@ -181,7 +194,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                 GestureDetector(
                                   child: Text('Cámara'),
                                   onTap: () {
-                                    _pickImage(ImageSource.camera);
+                                    pickImage(ImageSource.camera);
                                     Navigator.of(context).pop();
                                   },
                                 ),
