@@ -2,34 +2,35 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:rentuis/pages/request_page.dart';
 import 'package:flutter/painting.dart';
-
 import 'add_offer_page.dart';
 import 'home_page.dart';
 
 class RentPage extends StatefulWidget {
-  const RentPage({super.key});
+  final String userEmail;
+
+  RentPage({required this.userEmail});
 
   @override
-  State <RentPage> createState() =>  _RentPageState();
+  State<RentPage> createState() => _RentPageState();
 }
 
-class  _RentPageState extends State <RentPage> {
-      int selectedIndex = 2;
+class _RentPageState extends State<RentPage> {
+  int selectedIndex = 2;
   int count = 0;
   int clickCounter = 0;
 
   @override
   Widget build(BuildContext context) {
-        final colors = Theme.of(context).colorScheme;
+    final colors = Theme.of(context).colorScheme;
 
-    final screens = [const RequestPage(),const HomePage(), const RentPage()];
+    final screens = [RequestPage(userEmail: widget.userEmail), HomePage(userEmail: widget.userEmail), RentPage(userEmail: widget.userEmail)];
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: colors.primary, // Color de fondo personalizado
+        backgroundColor: colors.primary,
         title: Text('Rentas disponibles'),
         centerTitle: false,
-        automaticallyImplyLeading: false, // Eliminar el botón de navegación de retroceso
-        actions: [], // Eliminar los elementos de acción
+        automaticallyImplyLeading: false,
+        actions: [],
       ),
       body: Column(
         children: [
@@ -39,7 +40,7 @@ class  _RentPageState extends State <RentPage> {
               data: Theme.of(context).copyWith(
                 inputDecorationTheme: InputDecorationTheme(
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(25.0), // Bordes más redondeados
+                    borderRadius: BorderRadius.circular(25.0),
                   ),
                 ),
               ),
@@ -63,7 +64,7 @@ class  _RentPageState extends State <RentPage> {
                   return ListView.separated(
                     itemCount: snapshot.data!.docs.length,
                     separatorBuilder: (BuildContext context, int index) {
-                      return SizedBox(height: 15.0); // Separación vertical entre elementos
+                      return SizedBox(height: 15.0);
                     },
                     itemBuilder: (BuildContext context, int index) {
                       DocumentSnapshot document = snapshot.data!.docs[index];
@@ -71,69 +72,70 @@ class  _RentPageState extends State <RentPage> {
                       String itemName = itemData['name'];
                       int itemPrice = itemData['price'];
                       String itemTimeUnit = itemData['time_unit'];
-                      int itemRating = itemData['rating'];
+                      int? itemRating = itemData['rating']; // Cambio aquí para obtener el rating como entero nullable (int?)
+
                       String imagePath = itemData['image'];
 
-                       return Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 40.0), // Espacio de relleno alrededor del item
+                      return Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 40.0),
                         child: Container(
-                          height: 120.0, // Aumentar la altura del Card
+                          height: 120.0,
                           child: Card(
-                            elevation: 4, // Elevación para crear la sombra
+                            elevation: 4,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(15.0), // Bordes redondeados
+                              borderRadius: BorderRadius.circular(15.0),
                             ),
                             child: Align(
-                              alignment: Alignment.center, // Centrar verticalmente el contenido
+                              alignment: Alignment.center,
                               child: ListTile(
                                 leading: CircleAvatar(
-                                  radius: 30.0, // Ajusta el tamaño según tus necesidades
+                                  radius: 30.0,
                                   backgroundImage: NetworkImage(imagePath),
                                 ),
                                 title: Column(
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     Padding(
-                                      padding: EdgeInsets.only(bottom: 8.0), // Aumentar el espaciado inferior
-                                      child: Text(itemName,
-                                      style: TextStyle(
-                                          fontSize: 18, // Tamaño de fuente personalizado
-                                          fontWeight: FontWeight.bold,)
+                                      padding: EdgeInsets.only(bottom: 8.0),
+                                      child: Text(
+                                        itemName,
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
-                                      
                                     ),
                                     Padding(
-                                      padding: EdgeInsets.only(bottom: 8.0), // Aumentar el espaciado inferior
+                                      padding: EdgeInsets.only(bottom: 8.0),
                                       child: Text('\$$itemPrice/$itemTimeUnit'),
                                     ),
                                     Row(
                                       mainAxisAlignment: MainAxisAlignment.center,
-                                      children: List.generate(itemRating, (index) {
+                                      children: List.generate(itemRating ?? 0, (index) {
+                                        // Cambio aquí para usar '??' para evitar un error si itemRating es null
                                         return Icon(Icons.star, color: Colors.yellow);
                                       }),
                                     ),
                                   ],
                                 ),
-                            trailing: ElevatedButton(
-                              onPressed: () {
-                                // Acción al presionar el botón "Rentar"
-                                print('Rentar presionado en el artículo $itemName');
-                              },
-                              child: Text('Rentar'),
-                              style: ElevatedButton.styleFrom(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(15.0), // Bordes redondeados
+                                trailing: ElevatedButton(
+                                  onPressed: () {
+                                    print('Rentar presionado en el artículo $itemName');
+                                  },
+                                  child: Text('Rentar'),
+                                  style: ElevatedButton.styleFrom(
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(15.0),
+                                    ),
+                                  ),
                                 ),
+                                onTap: () {
+                                  print('Elemento $index seleccionado');
+                                },
                               ),
-                            ), // Icono a la derecha
-                            onTap: () {
-                              // Acción al hacer clic en un elemento
-                              print('Elemento $index seleccionado');
-                            },
+                            ),
                           ),
                         ),
-                        )
-                        )
                       );
                     },
                   );
@@ -150,7 +152,7 @@ class  _RentPageState extends State <RentPage> {
           Navigator.push(
             context,
             PageRouteBuilder(
-              pageBuilder: (context, animation, secondaryAnimation) => AddOfferPage(),
+              pageBuilder: (context, animation, secondaryAnimation) => AddOfferPage(userEmail: widget.userEmail),
               transitionsBuilder: (context, animation, secondaryAnimation, child) {
                 return FadeTransition(
                   opacity: animation,
@@ -161,7 +163,7 @@ class  _RentPageState extends State <RentPage> {
           );
         },
         child: Icon(Icons.add),
-        backgroundColor: Colors.blue, // Color azul
+        backgroundColor: Colors.blue,
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.shifting,
@@ -170,8 +172,8 @@ class  _RentPageState extends State <RentPage> {
           setState(() {
             selectedIndex = value;
             Navigator.push(
-            context,
-            PageRouteBuilder(
+              context,
+              PageRouteBuilder(
                 pageBuilder: (_, __, ___) => screens[value],
                 transitionsBuilder: (_, animation, __, child) {
                   return FadeTransition(
@@ -180,17 +182,16 @@ class  _RentPageState extends State <RentPage> {
                   );
                 },
               ),
-        );
+            );
           });
         },
         elevation: 0,
         items: [
           BottomNavigationBarItem(
-            icon: const Icon(Icons.article,),
+            icon: const Icon(Icons.article),
             activeIcon: const Icon(Icons.article_outlined),
             label: 'Solicitudes',
             backgroundColor: colors.primary,
-            
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.home_outlined),
@@ -204,12 +205,8 @@ class  _RentPageState extends State <RentPage> {
             label: 'Ofertas',
             backgroundColor: colors.tertiary,
           ),
-        
         ],
-        
       ),
     );
-  
   }
 }
-

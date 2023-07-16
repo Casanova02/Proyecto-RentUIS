@@ -1,42 +1,59 @@
 import 'package:flutter/material.dart';
-import 'package:rentuis/pages/request_page.dart';
-import 'package:rentuis/pages/user_session.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
 import 'add_offer_page.dart';
 
 class OffersPage extends StatefulWidget {
-  const OffersPage({Key? key}) : super(key: key);
+  final String userEmail;
+
+  OffersPage({required this.userEmail});
 
   @override
   _OffersPageState createState() => _OffersPageState();
 }
 
 class _OffersPageState extends State<OffersPage> {
-  final UserSession userSession = UserSession();
+  String? userId;
   List<Map<String, dynamic>> userOffers = [];
 
   @override
   void initState() {
     super.initState();
-    _getUserOffers();
+    _getUserId();
+  }
+
+  void _getUserId() async {
+    final QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('usuarios')
+        .where('email', isEqualTo: widget.userEmail)
+        .get();
+
+    if (querySnapshot.docs.isNotEmpty) {
+      final DocumentSnapshot userDoc = querySnapshot.docs.first;
+      userId = userDoc.get('id');
+      _getUserOffers();
+    } else {
+      print('No se encontró un usuario con el correo electrónico proporcionado.');
+    }
   }
 
   void _getUserOffers() {
-    final String userId = userSession.userId!;
-    FirebaseFirestore.instance
-        .collection('items')
-        .where('userId', isEqualTo: userId)
-        .get()
-        .then((QuerySnapshot snapshot) {
-      setState(() {
-        userOffers = snapshot.docs
-            .map((DocumentSnapshot document) => document.data() as Map<String, dynamic>)
-            .toList();
+    if (userId != null) {
+      FirebaseFirestore.instance
+          .collection('items')
+          .where('userId', isEqualTo: userId)
+          .get()
+          .then((QuerySnapshot snapshot) {
+        setState(() {
+          userOffers = snapshot.docs
+              .map((DocumentSnapshot document) => document.data() as Map<String, dynamic>)
+              .toList();
+        });
+      }).catchError((error) {
+        print('Error al obtener las ofertas del usuario: $error');
       });
-    }).catchError((error) {
-      print('Error al obtener las ofertas del usuario: $error');
-    });
+    } else {
+      print('No se pudo obtener el ID del usuario.');
+    }
   }
 
   @override
@@ -49,7 +66,7 @@ class _OffersPageState extends State<OffersPage> {
         children: [
           Container(
             alignment: Alignment.center,
-            margin: EdgeInsets.only(top: 120.0, bottom: 30.0), // Aumentar el margen inferior
+            margin: EdgeInsets.only(top: 120.0),
             child: Text(
               'Seleccionar oferta',
               style: TextStyle(
@@ -75,22 +92,19 @@ class _OffersPageState extends State<OffersPage> {
             Navigator.push(
               context,
               PageRouteBuilder(
-                pageBuilder: (context, animation, secondaryAnimation) => AddOfferPage(),
+                pageBuilder: (context, animation, secondaryAnimation) =>
+                    AddOfferPage(userEmail: widget.userEmail),
                 transitionsBuilder: (context, animation, secondaryAnimation, child) {
                   return FadeTransition(
                     opacity: animation,
                     child: child,
                   );
-                  
                 },
               ),
             );
-            
           },
-          
           child: Icon(Icons.add),
           backgroundColor: Colors.blue, // Color azul
-          
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
@@ -162,10 +176,6 @@ class _OffersPageState extends State<OffersPage> {
           },
         ),
       ),
-      
     );
-    
-    
   }
-  
 }

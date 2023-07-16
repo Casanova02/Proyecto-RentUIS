@@ -1,26 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:rentuis/pages/request_page.dart';
-import 'package:rentuis/pages/user_session.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
 class AddRequestPage extends StatefulWidget {
-  const AddRequestPage({Key? key}) : super(key: key);
+  final String userEmail;
+
+  const AddRequestPage({Key? key, required this.userEmail}) : super(key: key);
 
   @override
   _AddRequestPageState createState() => _AddRequestPageState();
 }
 
 class _AddRequestPageState extends State<AddRequestPage> {
-  final UserSession userSession = UserSession();
   TextEditingController _titleController = TextEditingController();
   TextEditingController _startDateController = TextEditingController();
   TextEditingController _startTimeController = TextEditingController();
   TextEditingController _endDateController = TextEditingController();
   TextEditingController _endTimeController = TextEditingController();
   XFile? _image;
+  String? userId;
 
   @override
   void dispose() {
@@ -30,6 +31,35 @@ class _AddRequestPageState extends State<AddRequestPage> {
     _endDateController.dispose();
     _endTimeController.dispose();
     super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Al iniciar la página, buscamos el id del usuario que coincida con el userEmail
+    getUserIdFromEmail();
+  }
+
+  Future<void> getUserIdFromEmail() async {
+    try {
+      final QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collection('usuarios')
+          .where('email', isEqualTo: widget.userEmail)
+          .limit(1)
+          .get();
+
+      if (snapshot.size > 0) {
+        // Si encontramos un usuario con el email, obtenemos el id
+        final user = snapshot.docs.first;
+        userId = user.id;
+      } else {
+        // Si no se encuentra el usuario, puedes mostrar un mensaje de error
+        // o realizar alguna otra acción.
+        print('Usuario no encontrado con el email: ${widget.userEmail}');
+      }
+    } catch (e) {
+      print('Error al obtener el id del usuario: $e');
+    }
   }
 
   Future<void> pickImage() async {
@@ -56,7 +86,7 @@ class _AddRequestPageState extends State<AddRequestPage> {
   void redirectToRequestPage() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => RequestPage()),
+      MaterialPageRoute(builder: (context) => RequestPage(userEmail: widget.userEmail)),
     );
   }
 
@@ -143,36 +173,28 @@ class _AddRequestPageState extends State<AddRequestPage> {
         _endTimeController.text.isEmpty) {
       showErrorMessage('Debes llenar todos los campos para añadir una solicitud.');
     } else {
-      if (userSession.userId != null) {
-        final String userId = userSession.userId!;
-        final String title = _titleController.text.trim();
-        final int? rating = userSession.userRating;
+      final String userId = widget.userEmail; // Usar el userEmail directamente
+      final String title = _titleController.text.trim();
 
-        // Subir la imagen a Firebase Storage y obtener la URL de descarga
-        String imageUrl = await uploadImageToFirebaseStorage(File(_image!.path));
+      // Subir la imagen a Firebase Storage y obtener la URL de descarga
+      String imageUrl = await uploadImageToFirebaseStorage(File(_image!.path));
 
-        // Almacenar la URL de descarga de la imagen en el campo "image" de la colección "requests"
-        FirebaseFirestore.instance.collection('items_solicitados').add({
-          'userId': userId,
-          'name': title,
-          'start_date': _startDateController.text,
-          'start_time': _startTimeController.text,
-          'end_date': _endDateController.text,
-          'end_time': _endTimeController.text,
-          'rating': rating,
-          'image': imageUrl,
-        });
+      // Almacenar la URL de descarga de la imagen en el campo "image" de la colección "requests"
+      FirebaseFirestore.instance.collection('items_solicitados').add({
+        'userId': userId,
+        'name': title,
+        'start_date': _startDateController.text,
+        'start_time': _startTimeController.text,
+        'end_date': _endDateController.text,
+        'end_time': _endTimeController.text,
+        'image': imageUrl,
+      });
 
-        print('Solicitud presionada');
-        print(
-            'userId: $userId, title: $title, startDate: ${_startDateController.text} ${_startTimeController.text}, endDate: ${_endDateController.text} ${_endTimeController.text}');
-        print('imageUrl: $imageUrl');
+      print('Solicitud presionada');
+      print('userId: $userId, title: $title, startDate: ${_startDateController.text} ${_startTimeController.text}, endDate: ${_endDateController.text} ${_endTimeController.text}');
+      print('imageUrl: $imageUrl');
 
-        redirectToRequestPage();
-      } else {
-        // No se encontró un usuario autenticado, muestra un mensaje de error o redirige a la página de inicio de sesión
-        showErrorMessage('Debes iniciar sesión para añadir una solicitud.');
-      }
+      redirectToRequestPage();
     }
   }
 

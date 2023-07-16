@@ -6,7 +6,9 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
 class AddOfferPage extends StatefulWidget {
-  const AddOfferPage({Key? key}) : super(key: key);
+  final String userEmail;
+
+  const AddOfferPage({Key? key, required this.userEmail}) : super(key: key);
 
   @override
   _AddOfferPageState createState() => _AddOfferPageState();
@@ -19,6 +21,7 @@ class _AddOfferPageState extends State<AddOfferPage> {
   TextEditingController _descriptionController = TextEditingController();
   String? _selectedTimeOption;
   XFile? _image;
+  String userId = '';
 
   @override
   void dispose() {
@@ -28,6 +31,13 @@ class _AddOfferPageState extends State<AddOfferPage> {
     super.dispose();
   }
 
+  @override
+  void initState() {
+    super.initState();
+    // Al iniciar la página, buscamos el id del usuario que coincida con el userEmail
+    getUserIdFromEmail();
+  }
+
   Future<void> pickImage() async {
     XFile? imageFile = await ImagePicker().pickImage(source: ImageSource.gallery);
     if (imageFile != null) {
@@ -35,6 +45,37 @@ class _AddOfferPageState extends State<AddOfferPage> {
         _image = imageFile;
       });
     }
+  }
+
+  Future<void> getUserIdFromEmail() async {
+    try {
+      final QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collection('usuarios')
+          .where('email', isEqualTo: widget.userEmail)
+          .limit(1)
+          .get();
+
+      if (snapshot.size > 0) {
+        // Si encontramos un usuario con el email, obtenemos el id
+        final user = snapshot.docs.first;
+        userId = user.id;
+      } else {
+        // Si no se encuentra el usuario, puedes mostrar un mensaje de error
+        // o realizar alguna otra acción.
+        print('Usuario no encontrado con el email: ${widget.userEmail}');
+      }
+    } catch (e) {
+      print('Error al obtener el id del usuario: $e');
+    }
+  }
+
+  Future<int?> _getUserRating(String userEmail) async {
+    final snapshot = await FirebaseFirestore.instance.collection('users').where('email', isEqualTo: userEmail).get();
+    if (snapshot.docs.isNotEmpty) {
+      var data = snapshot.docs[0].data();
+      return data['rating'];
+    }
+    return null;
   }
 
   Future<String> uploadImageToFirebaseStorage(File file) async {
@@ -70,50 +111,41 @@ class _AddOfferPageState extends State<AddOfferPage> {
     if (_image == null || _titleController.text.isEmpty || _priceController.text.isEmpty || _selectedTimeOption == null || _descriptionController.text.isEmpty) {
       showErrorMessage(context, 'Debes llenar todos los campos para añadir una oferta.');
     } else {
-      if (userSession.userId != null) {
-        final String userId = userSession.userId!;
-        final String title = _titleController.text.trim();
-        final int price = int.parse(_priceController.text.trim());
-        final String timeUnit = _selectedTimeOption == 'Hora' ? 'H' : 'D';
-        final String description = _descriptionController.text.trim();
-        final int? rating = userSession.userRating;
+      final String userEmail = widget.userEmail;
+      final String title = _titleController.text.trim();
+      final int price = int.parse(_priceController.text.trim());
+      final String timeUnit = _selectedTimeOption == 'Hora' ? 'H' : 'D';
+      final String description = _descriptionController.text.trim();
 
-        // Subir la imagen a Firebase Storage y obtener la URL de descarga
-        String imageUrl = await uploadImageToFirebaseStorage(File(_image!.path));
+      final int? rating = await _getUserRating(userEmail);
 
-        // Almacenar la URL de descarga de la imagen en el campo "image" de la colección "items"
-        FirebaseFirestore.instance.collection('items').add({
-          'userId': userId,
-          'name': title,
-          'price': price,
-          'time_unit': timeUnit,
-          'description': description,
-          'rating': rating,
-          'image': imageUrl,
-        });
+      // Subir la imagen a Firebase Storage y obtener la URL de descarga
+      String imageUrl = await uploadImageToFirebaseStorage(File(_image!.path));
 
-        print('Rentar presionado');
-        print('userId: $userId, title: $title, price: $price, timeUnit: $timeUnit, description: $description');
-        print('imageUrl: $imageUrl');
+      // Almacenar la URL de descarga de la imagen y el ID del usuario en el campo "image" y "userId" de la colección "items"
+      FirebaseFirestore.instance.collection('items').add({
+        'userId': userId,
+        'name': title,
+        'price': price,
+        'time_unit': timeUnit,
+        'description': description,
+        'rating': rating,
+        'image': imageUrl,
+      });
 
-        // Mostrar la notificación de éxito
-        showSuccessMessage(context);
+      // Mostrar la notificación de éxito
+      showSuccessMessage(context);
 
-        // Borrar los campos de entrada de texto
-        _titleController.clear();
-        _priceController.clear();
-        _descriptionController.clear();
-        setState(() {
-          _selectedTimeOption = null;
-          _image = null;
-        });
-      } else {
-        // No se encontró un usuario autenticado, muestra un mensaje de error o redirige a la página de inicio de sesión
-        showErrorMessage(context, 'Debes iniciar sesión para rentar.');
-      }
+      // Borrar los campos de entrada de texto
+      _titleController.clear();
+      _priceController.clear();
+      _descriptionController.clear();
+      setState(() {
+        _selectedTimeOption = null;
+        _image = null;
+      });
     }
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -134,7 +166,9 @@ class _AddOfferPageState extends State<AddOfferPage> {
                   },
                   child: CircleAvatar(
                     radius: 100.0,
-                    backgroundImage: _image != null ? FileImage(File(_image!.path)) as ImageProvider<Object> : AssetImage('assets/profile_placeholder.jpg'),
+                    backgroundImage: _image != null
+                        ? FileImage(File(_image!.path)) as ImageProvider<Object>
+                        : AssetImage('assets/profile_placeholder.jpg'),
                   ),
                 ),
                 SizedBox(height: 30.0),
