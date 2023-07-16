@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:rentuis/pages/rents_page.dart';
 import 'package:rentuis/pages/user_session.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
@@ -50,34 +49,26 @@ class _AddOfferPageState extends State<AddOfferPage> {
     return await taskSnapshot.ref.getDownloadURL();
   }
 
-  void redirectToRentsPage() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => RentPage()),
-    );
-  }
-
-  void showErrorMessage(String message) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Error'),
-        content: Text(message),
-        actions: [
-          TextButton(
-            child: Text('Cerrar'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-        ],
+  void showSuccessMessage(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('La oferta se ha añadido con éxito.'),
       ),
     );
   }
 
-  void addOffer() async {
+  void showErrorMessage(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+
+  void addOffer(BuildContext context) async {
     if (_image == null || _titleController.text.isEmpty || _priceController.text.isEmpty || _selectedTimeOption == null || _descriptionController.text.isEmpty) {
-      showErrorMessage('Debes llenar todos los campos para añadir una oferta.');
+      showErrorMessage(context, 'Debes llenar todos los campos para añadir una oferta.');
     } else {
       if (userSession.userId != null) {
         final String userId = userSession.userId!;
@@ -105,10 +96,20 @@ class _AddOfferPageState extends State<AddOfferPage> {
         print('userId: $userId, title: $title, price: $price, timeUnit: $timeUnit, description: $description');
         print('imageUrl: $imageUrl');
 
-        redirectToRentsPage();
+        // Mostrar la notificación de éxito
+        showSuccessMessage(context);
+
+        // Borrar los campos de entrada de texto
+        _titleController.clear();
+        _priceController.clear();
+        _descriptionController.clear();
+        setState(() {
+          _selectedTimeOption = null;
+          _image = null;
+        });
       } else {
         // No se encontró un usuario autenticado, muestra un mensaje de error o redirige a la página de inicio de sesión
-        showErrorMessage('Debes iniciar sesión para rentar.');
+        showErrorMessage(context, 'Debes iniciar sesión para rentar.');
       }
     }
   }
@@ -240,7 +241,7 @@ class _AddOfferPageState extends State<AddOfferPage> {
                   width: 150.0,
                   padding: EdgeInsets.all(20.0),
                   child: ElevatedButton(
-                    onPressed: addOffer,
+                    onPressed: () => addOffer(context),
                     child: Text(
                       'Rentar',
                       style: TextStyle(fontSize: 18.0),

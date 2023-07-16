@@ -3,6 +3,8 @@ import 'package:rentuis/pages/request_page.dart';
 import 'package:rentuis/pages/user_session.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'add_offer_page.dart';
+
 class OffersPage extends StatefulWidget {
   const OffersPage({Key? key}) : super(key: key);
 
@@ -47,7 +49,7 @@ class _OffersPageState extends State<OffersPage> {
         children: [
           Container(
             alignment: Alignment.center,
-            margin: EdgeInsets.only(top: 120.0),
+            margin: EdgeInsets.only(top: 120.0, bottom: 30.0), // Aumentar el margen inferior
             child: Text(
               'Seleccionar oferta',
               style: TextStyle(
@@ -66,6 +68,32 @@ class _OffersPageState extends State<OffersPage> {
           ),
         ],
       ),
+      floatingActionButton: Container(
+        margin: EdgeInsets.only(bottom: 35.0),
+        child: FloatingActionButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) => AddOfferPage(),
+                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                  return FadeTransition(
+                    opacity: animation,
+                    child: child,
+                  );
+                  
+                },
+              ),
+            );
+            
+          },
+          
+          child: Icon(Icons.add),
+          backgroundColor: Colors.blue, // Color azul
+          
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 
@@ -113,15 +141,18 @@ class _OffersPageState extends State<OffersPage> {
               ),
             ],
           ),
-          trailing: ElevatedButton(
-            onPressed: () {
-              // Acción al seleccionar la oferta
-              print('Oferta seleccionada: $itemName');
-            },
-            child: Text('Seleccionar'),
-            style: ElevatedButton.styleFrom(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15.0),
+          trailing: Container(
+            constraints: BoxConstraints(maxWidth: 110.0), // Establecer un ancho máximo
+            child: ElevatedButton(
+              onPressed: () {
+                // Acción al seleccionar la oferta
+                print('Oferta seleccionada: $itemName');
+              },
+              child: Text('Seleccionar'),
+              style: ElevatedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15.0),
+                ),
               ),
             ),
           ),
@@ -131,6 +162,10 @@ class _OffersPageState extends State<OffersPage> {
           },
         ),
       ),
+      
     );
+    
+    
   }
+  
 }
