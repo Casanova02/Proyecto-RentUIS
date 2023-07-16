@@ -51,7 +51,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         flexibleSpace: Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             gradient: LinearGradient(
               colors: [
                 Colors.lightBlueAccent,
@@ -62,16 +62,16 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
         ),
-        title: Text('RentUIS'),
+        title: const Text('RentUIS'),
       ),
       body: Center(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: 16.0),
+            const SizedBox(height: 16.0),
             Container(
               width: 370,
-              padding: EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(16.0),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(30),
@@ -79,14 +79,14 @@ class _HomePageState extends State<HomePage> {
                   BoxShadow(
                     blurRadius: 2,
                     spreadRadius: 2,
-                    offset: Offset(1, 1),
+                    offset: const Offset(1, 1),
                     color: Colors.grey.withOpacity(0.2),
                   ),
                 ],
               ),
               child: Row(
                 children: [
-                  CircleAvatar(
+                  const CircleAvatar(
                     radius: 32.0,
                     backgroundImage: AssetImage('assets/profile_placeholder.jpg'), // Utiliza userImageUrl en lugar de 'assets/profile_placeholder.png' si tienes la ruta de la imagen de perfil
                   ),
@@ -94,7 +94,7 @@ class _HomePageState extends State<HomePage> {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      const Text(
                         'Hola, ',
                         style: TextStyle(
                           fontSize: 18.0,
@@ -104,7 +104,7 @@ class _HomePageState extends State<HomePage> {
                       SizedBox(height: 4.0),
                       Text(
                         userFullName ?? '',
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 18.0,
                           fontWeight: FontWeight.bold,
                         ),
@@ -114,10 +114,10 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             ),
-            SizedBox(height: 16.0),
+            const SizedBox(height: 16.0),
             Container(
               width: 370,
-              padding: EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(16.0),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(30),
@@ -125,12 +125,12 @@ class _HomePageState extends State<HomePage> {
                   BoxShadow(
                     blurRadius: 2,
                     spreadRadius: 2,
-                    offset: Offset(1, 1),
+                    offset: const Offset(1, 1),
                     color: Colors.grey.withOpacity(0.2),
                   ),
                 ],
               ),
-              child: Row(
+              child: const Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Icon(
@@ -167,8 +167,53 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             ),
-            SizedBox(height: 16.0),
-            Expanded(
+            //Contenedor con el historial
+            const SizedBox(height: 16.0),
+            Container(
+              width: 370,
+              padding: const EdgeInsets.symmetric(horizontal: 16.0,vertical: 20.0),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(30),
+                boxShadow: [
+                  BoxShadow(
+                    blurRadius: 2,
+                    spreadRadius: 2,
+                    offset: const Offset(1, 1),
+                    color: Colors.grey.withOpacity(0.2),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisSize: MainAxisSize.max,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.only(top:5.0,bottom:20),
+                    child:const Text(
+                    "Tus solicitudes",
+                    style: TextStyle(
+                      color:Colors.black,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                    ),
+                  ),
+                  ),
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      crearRecuadro(index: 0),
+                      crearRecuadro(index: 1),
+                      crearRecuadro(index: 2),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16.0),
+            const Expanded(
               child: SingleChildScrollView(
                 child: Padding(
                   padding: EdgeInsets.all(16.0),
@@ -227,4 +272,95 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+
+  Widget crearRecuadro({required int index}) {
+    return FutureBuilder<QuerySnapshot>(
+      future: FirebaseFirestore.instance.collection('items').limit(3).get(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        } else if (snapshot.hasError) {
+          return const Center(
+            child: Text('Error al cargar los datos'),
+          );
+        } else if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
+          // Verificar que el índice esté dentro del rango de documentos disponibles
+          if (index >= 0 && index < snapshot.data!.docs.length) {
+            var document = snapshot.data!.docs[index];
+            String imageUrl = document['image'];
+            String itemName = document['name'];
+            return Column(
+              children: [
+                Stack(
+                  children: [
+                    DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [Colors.lightBlueAccent, Colors.lightGreen],
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Container(
+                        width: 100,
+                        height: 100,
+                      ),
+                    ),
+                    Positioned(
+                      top: 10,
+                      left: 10,
+                      child: Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Colors.black,
+                            width: 3,
+                          ),
+                        ),
+                        child: CircleAvatar(
+                          radius: 40,
+                          backgroundColor: Colors.white,
+                          backgroundImage: imageUrl != null ? NetworkImage(imageUrl) : null,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                if (imageUrl != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: Text(
+                      itemName,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          }
+        }
+
+        // Mostrar el contenedor verde sin la imagen si no se encontró el documento o el campo "imageUrl" es null
+        return Container(
+          width: 100,
+          height: 100,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Colors.lightBlueAccent, Colors.lightGreen],
+            ),
+            borderRadius: BorderRadius.circular(10),
+          ),
+        );
+      },
+    );
+  }
+
 }
