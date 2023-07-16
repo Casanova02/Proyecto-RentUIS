@@ -70,7 +70,7 @@ class _AddOfferPageState extends State<AddOfferPage> {
   }
 
   Future<int?> _getUserRating(String userEmail) async {
-    final snapshot = await FirebaseFirestore.instance.collection('users').where('email', isEqualTo: userEmail).get();
+    final snapshot = await FirebaseFirestore.instance.collection('usuarios').where('email', isEqualTo: userEmail).get();
     if (snapshot.docs.isNotEmpty) {
       var data = snapshot.docs[0].data();
       return data['rating'];

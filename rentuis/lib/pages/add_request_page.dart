@@ -61,7 +61,14 @@ class _AddRequestPageState extends State<AddRequestPage> {
       print('Error al obtener el id del usuario: $e');
     }
   }
-
+  Future<int?> _getUserRating(String userEmail) async {
+    final snapshot = await FirebaseFirestore.instance.collection('usuarios').where('email', isEqualTo: userEmail).get();
+    if (snapshot.docs.isNotEmpty) {
+      var data = snapshot.docs[0].data();
+      return data['rating'];
+    }
+    return null;
+  }
   Future<void> pickImage() async {
     XFile? imageFile = await ImagePicker().pickImage(source: ImageSource.gallery);
     if (imageFile != null) {
@@ -175,6 +182,7 @@ class _AddRequestPageState extends State<AddRequestPage> {
     } else {
       final String userId = widget.userEmail; // Usar el userEmail directamente
       final String title = _titleController.text.trim();
+      final int? rating = await _getUserRating(widget.userEmail);
 
       // Subir la imagen a Firebase Storage y obtener la URL de descarga
       String imageUrl = await uploadImageToFirebaseStorage(File(_image!.path));
@@ -188,6 +196,7 @@ class _AddRequestPageState extends State<AddRequestPage> {
         'end_date': _endDateController.text,
         'end_time': _endTimeController.text,
         'image': imageUrl,
+        'rating': rating,
       });
 
       print('Solicitud presionada');
