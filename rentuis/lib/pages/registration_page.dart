@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class RegistrationPage extends StatefulWidget {
   @override
@@ -58,58 +59,69 @@ class _RegistrationPageState extends State<RegistrationPage> {
     carreraValue = carreraOptions[0];
   }
 
-  void verificarExistenciaUsuario(BuildContext context) {
+  void verificarExistenciaUsuario(BuildContext context) async {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-    firestore
+    QuerySnapshot querySnapshot = await firestore
         .collection('usuarios')
         .where('email', isEqualTo: emailController.text)
-        .get()
-        .then((QuerySnapshot querySnapshot) {
-      if (querySnapshot.docs.isNotEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Ya existe una cuenta con esta dirección de correo electrónico.'),
-            duration: Duration(seconds: 2),
-          ),
-        );
-      } else {
-        guardarInformacionUsuario(context);
-      }
-    }).catchError((error) {
-      print('Error al verificar existencia de usuario: $error');
-    });
+        .get();
+
+    if (querySnapshot.docs.isNotEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+              'Ya existe una cuenta con esta dirección de correo electrónico.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    } else {
+      registrarUsuario();
+    }
   }
 
-  void guardarInformacionUsuario(BuildContext context) {
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
+  Future<void> registrarUsuario() async {
+    try {
+      // Registrar usuario en Firebase Authentication
+      UserCredential userCredential =
+          await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: emailController.text.trim(),
+        password: contrasenaController.text.trim(),
+      );
 
-    var usuarioRef = firestore.collection('usuarios').doc();
+      // Obtener el ID único del usuario registrado
+      String userId = userCredential.user!.uid;
 
-    usuarioRef.set({
-      'id': usuarioRef.id,
-      'nombres': nombresController.text,
-      'apellidos': apellidosController.text,
-      'email': emailController.text,
-      'contraseña': contrasenaController.text,
-      'numeroTelefono': numeroTelefonoController.text,
-      'carrera': carreraValue,
-    }).then((value) {
-      print('Usuario registrado con éxito');
-      _showSuccessMessage(context);
-    }).catchError((error) {
-      print('Error al registrar usuario: $error');
-    });
+      // Guardar la información del usuario en Firestore
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      var usuarioRef = firestore.collection('usuarios').doc(userId);
+
+      await usuarioRef.set({
+        'id': userId,
+        'nombres': nombresController.text.trim(),
+        'apellidos': apellidosController.text.trim(),
+        'email': emailController.text.trim(),
+        'numeroTelefono': numeroTelefonoController.text.trim(),
+        'carrera': carreraValue,
+        'contraseña': contrasenaController.text,
+        'rating':5,
+      });
+
+      // Mostrar mensaje de éxito y redirigir a la página de inicio de sesión
+      _showSuccessMessage();
+      Navigator.pushReplacementNamed(context, '/');
+    } catch (e) {
+      print('Error al registrar usuario: $e');
+    }
   }
 
-  void _showSuccessMessage(BuildContext context) {
+  void _showSuccessMessage() {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Te has registrado con éxito'),
         duration: Duration(seconds: 2),
       ),
     );
-    Navigator.pushReplacementNamed(context, '/');
   }
 
   void _pickImage(ImageSource source) async {
