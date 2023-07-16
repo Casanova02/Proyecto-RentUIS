@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'add_offer_page.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
 
 class OffersPage extends StatefulWidget {
   final String userEmail;
@@ -55,7 +58,41 @@ class _OffersPageState extends State<OffersPage> {
       print('No se pudo obtener el ID del usuario.');
     }
   }
+  Future<void> enviarNotificacionPush(String token) async {
+  final url = Uri.parse('https://fcm.googleapis.com/fcm/send');
 
+  final headers = {
+    'Content-Type': 'application/json',
+    'Authorization': 'key=rentuisdatabase', // Reemplaza con tu clave del servidor de FCM
+  };
+
+  final body = {
+    'notification': {
+      'title': 'Oferta seleccionada',
+      'body': 'Tu oferta ha sido seleccionada con éxito.',
+    },
+    'to': token,
+  };
+
+  final response = await http.post(
+    url,
+    headers: headers,
+    body: jsonEncode(body),
+  );
+
+  if (response.statusCode == 200) {
+    print('Notificación push enviada correctamente');
+  } else {
+    print('Error al enviar la notificación push: ${response.statusCode}');
+  }
+}
+  void _showSuccessNotification() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('La oferta se ha enviado con éxito.'),
+      ),
+    );
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -160,6 +197,7 @@ class _OffersPageState extends State<OffersPage> {
             child: ElevatedButton(
               onPressed: () {
                 // Acción al seleccionar la oferta
+                _showSuccessNotification();
                 print('Oferta seleccionada: $itemName');
               },
               child: Text('Seleccionar'),

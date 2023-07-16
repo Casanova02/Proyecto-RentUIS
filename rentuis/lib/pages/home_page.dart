@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:rentuis/pages/rents_page.dart';
 import 'package:rentuis/pages/request_page.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class HomePage extends StatefulWidget {
   final String userEmail;
@@ -36,7 +37,20 @@ class _HomePageState extends State<HomePage> {
         // Aquí puedes asignar la ruta de la imagen de perfil si está disponible en la base de datos
         // userImageUrl = userData['rutaImagenPerfil'];
       });
+
+      // Obtener el token de registro FCM
+      final token = await FirebaseMessaging.instance.getToken();
+
+      // Guardar el token en la base de datos si no es nulo
+      if (token != null) {
+        saveTokenToDatabase(token);
+      }
     }
+  }
+
+  void saveTokenToDatabase(String token) {
+    // Aquí puedes guardar el token en la base de datos
+    print('Token guardado en la base de datos: $token');
   }
 
   @override
