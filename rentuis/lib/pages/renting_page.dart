@@ -157,7 +157,21 @@ class _RentingPageState extends State<RentingPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Colors.lightBlueAccent,
+                Colors.lightGreen,
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
         title: Text('Tus solicitudes'),
+        actions: [],
+
       ),
       body: Column(
         children: [
@@ -280,6 +294,7 @@ class _RentingPageState extends State<RentingPage> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(15.0),
               ),
+              backgroundColor: Colors.lightBlueAccent,
             ),
           ),
           onTap: () {

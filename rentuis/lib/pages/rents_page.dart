@@ -27,11 +27,21 @@ class _RentPageState extends State<RentPage> {
     final screens = [RequestPage(userEmail: widget.userEmail), HomePage(userEmail: widget.userEmail), RentPage(userEmail: widget.userEmail)];
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: colors.primary,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Colors.lightBlueAccent,
+                Colors.lightGreen,
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
         title: Text('Rentas disponibles'),
-        centerTitle: false,
-        automaticallyImplyLeading: false,
         actions: [],
+        automaticallyImplyLeading: false,
       ),
       body: Column(
         children: [
@@ -140,6 +150,7 @@ class _RentPageState extends State<RentPage> {
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(15.0),
                                     ),
+                                    backgroundColor: Colors.lightBlueAccent,
                                   ),
                                 ),
                                 onTap: () {

@@ -151,7 +151,21 @@ class _AddOfferPageState extends State<AddOfferPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Colors.lightBlueAccent,
+                Colors.lightGreen,
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
         title: Text('Añadir oferta'),
+        actions: [],
+
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -286,6 +300,7 @@ class _AddOfferPageState extends State<AddOfferPage> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20.0),
                       ),
+                      backgroundColor: Colors.lightBlueAccent,
                     ),
                   ),
                 ),

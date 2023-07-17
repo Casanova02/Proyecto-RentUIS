@@ -152,7 +152,21 @@ class _OffersPageState extends State<OffersPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Colors.lightBlueAccent,
+                Colors.lightGreen,
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
         title: Text('Ofertas'),
+        actions: [],
+
       ),
       body: Column(
         children: [
@@ -265,6 +279,7 @@ class _OffersPageState extends State<OffersPage> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(15.0),
                 ),
+                backgroundColor: Colors.lightBlueAccent,
               ),
             ),
           ),

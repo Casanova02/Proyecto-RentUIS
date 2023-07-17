@@ -232,7 +232,21 @@ class _AddRequestPageState extends State<AddRequestPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Colors.lightBlueAccent,
+                Colors.lightGreen,
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
         title: Text('Añadir solicitud'),
+        actions: [],
+
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -357,6 +371,7 @@ class _AddRequestPageState extends State<AddRequestPage> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20.0),
                       ),
+                      backgroundColor: Colors.lightBlueAccent,
                     ),
                   ),
                 ),

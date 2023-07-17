@@ -31,13 +31,23 @@ class _RequestPageState extends State<RequestPage> {
     ];
 
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: colors.primary, // Color de fondo personalizado
-        title: Text('Solicitudes disponibles'),
-        centerTitle: false,
-        automaticallyImplyLeading: false, // Eliminar el botón de navegación de retroceso
-        actions: [],
-      ),
+    appBar: AppBar(
+    flexibleSpace: Container(
+    decoration: BoxDecoration(
+    gradient: LinearGradient(
+    colors: [
+    Colors.lightBlueAccent,
+    Colors.lightGreen,
+    ],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    ),
+    ),
+    ),
+    title: Text('Solicitudes disponibles'),
+    actions: [],
+      automaticallyImplyLeading: false,
+    ),
       body: Column(
         children: [
           Padding(
@@ -152,6 +162,7 @@ class _RequestPageState extends State<RequestPage> {
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(15.0),
                                 ),
+                                backgroundColor: Colors.lightBlueAccent,
                               ),
                             ),
                             onTap: () {
