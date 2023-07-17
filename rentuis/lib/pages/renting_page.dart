@@ -39,8 +39,9 @@ class _RentingPageState extends State<RentingPage> {
 
     if (querySnapshot.docs.isNotEmpty) {
       final DocumentSnapshot userDoc = querySnapshot.docs.first;
-      userId = userDoc.get('id');
+      userId = userDoc.get('email');
       _getUserRequest();
+      print('se encontró un usuario con el correo electrónico proporcionado.$userId');
     } else {
       print('No se encontró un usuario con el correo electrónico proporcionado.');
     }
@@ -49,7 +50,7 @@ class _RentingPageState extends State<RentingPage> {
   void _getUserRequest() {
     if (userId != null) {
       FirebaseFirestore.instance
-          .collection('items_seleccionados')
+          .collection('items_solicitados')
           .where('userId', isEqualTo: userId)
           .get()
           .then((QuerySnapshot snapshot) {
@@ -57,8 +58,10 @@ class _RentingPageState extends State<RentingPage> {
           userRequest = snapshot.docs
               .map((DocumentSnapshot document) {
             Map<String, dynamic> data = document.data() as Map<String, dynamic>;
-            data['itemId'] = document.id; // Agregar el campo 'itemId' con el valor del ID del documento
+            data['itemId'] = document.id;
+            String xd = document.id; // Agregar el campo 'itemId' con el valor del ID del documento
             return data;
+            print('No se pudo obtener el ID del usuario.$xd');
           })
               .toList();
         });

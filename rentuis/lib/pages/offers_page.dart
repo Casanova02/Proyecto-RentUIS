@@ -37,7 +37,7 @@ class _OffersPageState extends State<OffersPage> {
 
     if (querySnapshot.docs.isNotEmpty) {
       final DocumentSnapshot userDoc = querySnapshot.docs.first;
-      userId = userDoc.get('id');
+      userId = userDoc.get('email');
       _getUserOffers();
     } else {
       print('No se encontró un usuario con el correo electrónico proporcionado.');
