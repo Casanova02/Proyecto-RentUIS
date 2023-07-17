@@ -333,9 +333,9 @@ class _HomePageState extends State<HomePage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                     crearRecuadro(index: 0, userId: userId ?? '',collection: 'items'),
-                     crearRecuadro(index: 1, userId: userId ?? '',collection: 'items'),
-                     crearRecuadro(index: 2, userId: userId ?? '',collection: 'items'),
+                     crearRecuadro(index: 0, userId: widget.userEmail,collection: 'items'),
+                     crearRecuadro(index: 1, userId: widget.userEmail,collection: 'items'),
+                     crearRecuadro(index: 2, userId: widget.userEmail,collection: 'items'),
                     ],
                   ),
                 ],
