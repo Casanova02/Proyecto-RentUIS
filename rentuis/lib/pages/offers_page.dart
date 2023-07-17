@@ -18,7 +18,7 @@ class OffersPage extends StatefulWidget {
 class _OffersPageState extends State<OffersPage> {
   String? userId;
   List<Map<String, dynamic>> userOffers = [];
-
+  String? selectedItemId; 
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
   String? _deviceToken;
 
@@ -53,8 +53,12 @@ class _OffersPageState extends State<OffersPage> {
           .then((QuerySnapshot snapshot) {
         setState(() {
           userOffers = snapshot.docs
-              .map((DocumentSnapshot document) => document.data() as Map<String, dynamic>)
-              .toList();
+              .map((DocumentSnapshot document) {
+            Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+            data['itemId'] = document.id; // Agregar el campo 'itemId' con el valor del ID del documento
+            return data;
+})
+            .toList();
         });
       }).catchError((error) {
         print('Error al obtener las ofertas del usuario: $error');
@@ -205,6 +209,7 @@ class _OffersPageState extends State<OffersPage> {
     String itemTimeUnit = offerData['time_unit'];
     int? itemRating = offerData['rating'];
     String imagePath = offerData['image'];
+    String itemId = offerData['itemId']; // Obtene
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 40.0, vertical: 8.0),
@@ -247,9 +252,13 @@ class _OffersPageState extends State<OffersPage> {
             constraints: BoxConstraints(maxWidth: 110.0),
             child: ElevatedButton(
               onPressed: () {
+                setState(() {
+                  selectedItemId = itemId; // Asignar el ID del item seleccionado a la variable selectedItemId
+                });
                 _showSuccessNotification();
                 getDeviceToken(offerId); // Llama a la función getDeviceToken con el offerId
                 print('Oferta seleccionada: $itemName');
+                _updateItemOfferId(widget.offerId);
               },
               child: Text('Seleccionar'),
               style: ElevatedButton.styleFrom(
@@ -266,4 +275,32 @@ class _OffersPageState extends State<OffersPage> {
       ),
     );
   }
+  void _updateItemOfferId(String offerId) {
+  FirebaseFirestore.instance
+      .collection('items_solicitados')
+      .doc(offerId)
+      .get()
+      .then((DocumentSnapshot snapshot) {
+    if (snapshot.exists) {
+      // El documento existe, puedes acceder y actualizar el campo "ofertas"
+      List<String> currentOffers = List<String>.from(snapshot.get('ofertas'));
+      List<String> newOffers = List.from(currentOffers)..add(selectedItemId!);
+
+      FirebaseFirestore.instance
+          .collection('items_solicitados')
+          .doc(offerId)
+          .update({'ofertas': newOffers})
+          .then((_) {
+        print('ID del item guardado correctamente para el offerId: $offerId');
+      }).catchError((error) {
+        print('Error al guardar el ID del item: $error');
+      });
+    } else {
+      print(
+          'El documento con offerId: $offerId no existe en la colección items_seleccionados');
+    }
+  }).catchError((error) {
+    print('Error al obtener el documento: $error');
+  });
+}
 }

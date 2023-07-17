@@ -199,6 +199,7 @@ class _AddRequestPageState extends State<AddRequestPage> {
         'end_time': _endTimeController.text,
         'image': imageUrl,
         'rating': rating,
+        'ofertas':[],
       });
 
       print('Solicitud presionada');
