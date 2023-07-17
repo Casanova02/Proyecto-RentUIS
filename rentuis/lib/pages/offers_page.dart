@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'add_offer_page.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:firebase_messaging/firebase_messaging.dart';
+
+import 'add_offer_page.dart';
 
 class OffersPage extends StatefulWidget {
   final String userEmail;
+  final String offerId;
 
-  OffersPage({required this.userEmail});
+  OffersPage({required this.userEmail, required this.offerId});
 
   @override
   _OffersPageState createState() => _OffersPageState();
@@ -17,10 +20,14 @@ class _OffersPageState extends State<OffersPage> {
   String? userId;
   List<Map<String, dynamic>> userOffers = [];
 
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+  String? _deviceToken;
+
   @override
   void initState() {
     super.initState();
     _getUserId();
+    _initFirebaseMessaging();
   }
 
   void _getUserId() async {
@@ -34,8 +41,7 @@ class _OffersPageState extends State<OffersPage> {
       userId = userDoc.get('id');
       _getUserOffers();
     } else {
-      print(
-          'No se encontró un usuario con el correo electrónico proporcionado.');
+      print('No se encontró un usuario con el correo electrónico proporcionado.');
     }
   }
 
@@ -48,8 +54,7 @@ class _OffersPageState extends State<OffersPage> {
           .then((QuerySnapshot snapshot) {
         setState(() {
           userOffers = snapshot.docs
-              .map((DocumentSnapshot document) =>
-          document.data() as Map<String, dynamic>)
+              .map((DocumentSnapshot document) => document.data() as Map<String, dynamic>)
               .toList();
         });
       }).catchError((error) {
@@ -60,33 +65,70 @@ class _OffersPageState extends State<OffersPage> {
     }
   }
 
-  Future<void> enviarNotificacionPush(String token) async {
-    final url = Uri.parse('https://fcm.googleapis.com/fcm/send');
+  void _initFirebaseMessaging() async {
+    await _firebaseMessaging.requestPermission();
+    _firebaseMessaging.getToken().then((token) {
+      setState(() {
+        _deviceToken = token;
+      });
+    });
+  }
+
+  void getDeviceToken(String offerId) async {
+    final DocumentSnapshot offerSnapshot = await FirebaseFirestore.instance
+        .collection('items_solicitados')
+        .doc(offerId)
+        .get();
+
+    if (offerSnapshot.exists) {
+      final String email = offerSnapshot.get('userId');
+      String deviceToken;
+      print('Correo electrónico del usuario: $email');
+
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('usuarios')
+          .where('email', isEqualTo: email)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        DocumentSnapshot userSnapshot = querySnapshot.docs.first;
+        deviceToken = userSnapshot.get('deviceToken');
+        // Aquí tienes el deviceToken del usuario asociado al offerId
+        print('Device Token del usuario: $deviceToken');
+
+        // Puedes utilizar el deviceToken para enviar notificaciones push
+        sendPushNotificationToDevice(deviceToken);
+      } else {
+        print('No se encontró un usuario asociado al offerId');
+      }
+    } else {
+      print('No se encontró una solicitud con el offerId proporcionado');
+    }
+  }
+
+  void sendPushNotificationToDevice(String deviceToken) async {
+    final serverKey = 'AAAAlg8BvrA:APA91bEvsXeL8r4LBFYQyBNAsio27pS4925N9dY70oLoocBXob2Q0cfjA0979qF5QvzRyhqVcNCdkLrLA5X9bGdwWtBE5tj0_r4O7TGakIVsYGIDMTR6Lt-lLVlrgI94gYZR-dVqmIzf'; // Reemplaza con tu clave de servidor de FCM
+    final url = 'https://fcm.googleapis.com/fcm/send';
 
     final headers = {
       'Content-Type': 'application/json',
-      'Authorization': 'key=rentuisdatabase',
-      // Reemplaza con tu clave del servidor de FCM
+      'Authorization': 'key=$serverKey',
     };
 
     final body = {
       'notification': {
-        'title': 'Oferta seleccionada',
-        'body': 'Tu oferta ha sido seleccionada con éxito.',
+        'title': 'Nueva oferta',
+        'body': '¡Tienes una nueva oferta para tu solicitud!',
       },
-      'to': token,
+      'to': deviceToken,
     };
 
-    final response = await http.post(
-      url,
-      headers: headers,
-      body: jsonEncode(body),
-    );
+    final response = await http.post(Uri.parse(url), headers: headers, body: jsonEncode(body));
 
     if (response.statusCode == 200) {
-      print('Notificación push enviada correctamente');
+      print('Notificación enviada correctamente al dispositivo: $deviceToken');
     } else {
-      print('Error al enviar la notificación push: ${response.statusCode}');
+      print('Error al enviar la notificación al dispositivo: $deviceToken. Código de estado: ${response.statusCode}');
     }
   }
 
@@ -96,6 +138,10 @@ class _OffersPageState extends State<OffersPage> {
         content: Text('La oferta se ha enviado con éxito.'),
       ),
     );
+
+    if (_deviceToken != null) {
+      sendPushNotificationToDevice(_deviceToken!);
+    }
   }
 
   @override
@@ -121,7 +167,7 @@ class _OffersPageState extends State<OffersPage> {
             child: ListView.builder(
               itemCount: userOffers.length,
               itemBuilder: (context, index) {
-                return _buildOfferCard(userOffers[index]);
+                return _buildOfferCard(userOffers[index], widget.offerId);
               },
             ),
           ),
@@ -136,8 +182,7 @@ class _OffersPageState extends State<OffersPage> {
               PageRouteBuilder(
                 pageBuilder: (context, animation, secondaryAnimation) =>
                     AddOfferPage(userEmail: widget.userEmail),
-                transitionsBuilder: (context, animation, secondaryAnimation,
-                    child) {
+                transitionsBuilder: (context, animation, secondaryAnimation, child) {
                   return FadeTransition(
                     opacity: animation,
                     child: child,
@@ -154,11 +199,11 @@ class _OffersPageState extends State<OffersPage> {
     );
   }
 
-  Widget _buildOfferCard(Map<String, dynamic> offerData) {
+  Widget _buildOfferCard(Map<String, dynamic> offerData, String offerId) {
     String itemName = offerData['name'];
     int itemPrice = offerData['price'];
     String itemTimeUnit = offerData['time_unit'];
-    int? itemRating = offerData['rating']; // Asegurarse de que itemRating pueda ser nulo
+    int? itemRating = offerData['rating'];
     String imagePath = offerData['image'];
 
     return Padding(
@@ -203,6 +248,7 @@ class _OffersPageState extends State<OffersPage> {
             child: ElevatedButton(
               onPressed: () {
                 _showSuccessNotification();
+                getDeviceToken(offerId); // Llama a la función getDeviceToken con el offerId
                 print('Oferta seleccionada: $itemName');
               },
               child: Text('Seleccionar'),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'firebase_messaging.dart';
 import 'pages/password_recovery_page.dart';
 import 'pages/login_page.dart';
 import 'pages/home_page.dart';
@@ -13,6 +14,12 @@ void main() async {
 }
 
 class RentUISApp extends StatelessWidget {
+    final FirebaseMessagingService messagingService = FirebaseMessagingService();
+  @override
+  void initState() {
+
+    messagingService.init();
+  }
   @override
   Widget build(BuildContext context) {
     return MaterialApp(

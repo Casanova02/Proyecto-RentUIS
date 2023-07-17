@@ -24,7 +24,11 @@ class _RequestPageState extends State<RequestPage> {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
 
-    final screens = [RequestPage(userEmail: widget.userEmail), HomePage(userEmail: widget.userEmail), RentPage(userEmail: widget.userEmail)];
+    final screens = [
+      RequestPage(userEmail: widget.userEmail),
+      HomePage(userEmail: widget.userEmail),
+      RentPage(userEmail: widget.userEmail)
+    ];
 
     return Scaffold(
       appBar: AppBar(
@@ -84,10 +88,10 @@ class _RequestPageState extends State<RequestPage> {
                       DateTime endDate = DateFormat('dd/MM/yy').parse(endDateString);
                       DateTime endTime = DateFormat('h:mm a').parse(endTimeString);
 
-                      String formattedStartDate =
-                      DateFormat('dd/MM/yy - hh:mm a').format(DateTime(startDate.year, startDate.month, startDate.day, startTime.hour, startTime.minute));
-                      String formattedEndDate =
-                      DateFormat('dd/MM/yy - hh:mm a').format(DateTime(endDate.year, endDate.month, endDate.day, endTime.hour, endTime.minute));
+                      String formattedStartDate = DateFormat('dd/MM/yy - hh:mm a').format(DateTime(
+                          startDate.year, startDate.month, startDate.day, startTime.hour, startTime.minute));
+                      String formattedEndDate = DateFormat('dd/MM/yy - hh:mm a').format(DateTime(
+                          endDate.year, endDate.month, endDate.day, endTime.hour, endTime.minute));
 
                       return Padding(
                         padding: EdgeInsets.symmetric(horizontal: 40.0),
@@ -129,10 +133,19 @@ class _RequestPageState extends State<RequestPage> {
                             ),
                             trailing: ElevatedButton(
                               onPressed: () {
+                                
                                 Navigator.push(
                                   context,
-                                  MaterialPageRoute(builder: (context) => OffersPage(userEmail: widget.userEmail)),
+                                  MaterialPageRoute(
+                                    builder: (context) => OffersPage(
+                                      userEmail: widget.userEmail,
+                                      offerId: document.id,
+                                    ),
+                                    
+                                  ),
                                 );
+                                print('Valor de offerId: ${document.id}');
+
                               },
                               child: Text('Ofertar'),
                               style: ElevatedButton.styleFrom(
@@ -162,7 +175,8 @@ class _RequestPageState extends State<RequestPage> {
           Navigator.push(
             context,
             PageRouteBuilder(
-              pageBuilder: (context, animation, secondaryAnimation) => AddRequestPage(userEmail: widget.userEmail),
+              pageBuilder: (context, animation, secondaryAnimation) =>
+                  AddRequestPage(userEmail: widget.userEmail),
               transitionsBuilder: (context, animation, secondaryAnimation, child) {
                 return FadeTransition(
                   opacity: animation,
@@ -198,7 +212,7 @@ class _RequestPageState extends State<RequestPage> {
         elevation: 0,
         items: [
           BottomNavigationBarItem(
-            icon: const Icon(Icons.article,),
+            icon: const Icon(Icons.article),
             activeIcon: const Icon(Icons.article_outlined),
             label: 'Solicitudes',
             backgroundColor: colors.primary,

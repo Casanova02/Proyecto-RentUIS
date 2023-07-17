@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:rentuis/pages/rents_page.dart';
 import 'package:rentuis/pages/request_page.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 
 class HomePage extends StatefulWidget {
@@ -23,6 +24,31 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     fetchUserData();
+    getDeviceToken();
+
+  }
+  void getDeviceToken() async {
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
+    String? deviceToken = await messaging.getToken();
+    print('Device Token: $deviceToken');
+    saveDeviceToken(deviceToken);
+  }
+
+  void saveDeviceToken(String? deviceToken) {
+    if (deviceToken != null) {
+      String? userId = FirebaseAuth.instance.currentUser?.uid;
+
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      DocumentReference userRef = firestore.collection('usuarios').doc(userId);
+
+      userRef.update({
+        'deviceToken': deviceToken,
+      }).then((value) {
+        print('Token de registro del dispositivo guardado para el usuario');
+      }).catchError((error) {
+        print('Error al guardar el token en la base de datos: $error');
+      });
+    }
   }
 
   Future<void> fetchUserData() async {
@@ -37,15 +63,8 @@ class _HomePageState extends State<HomePage> {
         userFullName = '${userData['nombres']}';
         imagePath = '${userData['image']}';
       });
-      final token = await FirebaseMessaging.instance.getToken();
-
-      // Guardar el token en la base de datos si no es nulo
-      if (token != null) {
-        saveTokenToDatabase(token);
-      }
     }
   }
-
   void saveTokenToDatabase(String token) {
     // Aquí puedes guardar el token en la base de datos
     print('Token guardado en la base de datos: $token');

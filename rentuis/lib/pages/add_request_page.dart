@@ -186,9 +186,11 @@ class _AddRequestPageState extends State<AddRequestPage> {
 
       // Subir la imagen a Firebase Storage y obtener la URL de descarga
       String imageUrl = await uploadImageToFirebaseStorage(File(_image!.path));
+      String requestId = FirebaseFirestore.instance.collection('items_solicitados').doc().id;
 
       // Almacenar la URL de descarga de la imagen en el campo "image" de la colección "requests"
-      FirebaseFirestore.instance.collection('items_solicitados').add({
+      FirebaseFirestore.instance.collection('items_solicitados').doc(requestId).set({
+     
         'userId': userId,
         'name': title,
         'start_date': _startDateController.text,
