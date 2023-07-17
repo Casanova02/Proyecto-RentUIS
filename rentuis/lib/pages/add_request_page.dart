@@ -170,7 +170,13 @@ class _AddRequestPageState extends State<AddRequestPage> {
       _endTimeController.text = selectedTime.format(context);
     }
   }
-
+  void showSuccessMessage(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('La solicitud se ha añadido con éxito.'),
+      ),
+    );
+  }
   void addRequest() async {
     if (_image == null ||
         _titleController.text.isEmpty ||
@@ -206,8 +212,20 @@ class _AddRequestPageState extends State<AddRequestPage> {
       print('userId: $userId, title: $title, startDate: ${_startDateController.text} ${_startTimeController.text}, endDate: ${_endDateController.text} ${_endTimeController.text}');
       print('imageUrl: $imageUrl');
 
-      redirectToRequestPage();
+      showSuccessMessage(context);
+
+      // Borrar los campos de entrada de texto
+      _startDateController.clear();
+      _startTimeController.clear();
+      _endDateController.clear();
+      _titleController.clear();
+      _endTimeController.clear();
+      setState(() {
+
+        _image = null;
+      });
     }
+
   }
 
   @override

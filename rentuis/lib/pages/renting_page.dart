@@ -125,7 +125,7 @@ class _RentingPageState extends State<RentingPage> {
 
     final body = {
       'notification': {
-        'title': 'Nueva solicitud de renta',
+        'title': 'Te han hecho una solicitud',
         'body': '¡Tienes una nueva solicitud para tu renta!',
       },
       'to': deviceToken,
@@ -157,7 +157,7 @@ class _RentingPageState extends State<RentingPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Rentas'),
+        title: Text('Tus solicitudes'),
       ),
       body: Column(
         children: [
@@ -165,7 +165,7 @@ class _RentingPageState extends State<RentingPage> {
             alignment: Alignment.center,
             margin: EdgeInsets.only(top: 120.0),
             child: Text(
-              'Seleccionar renta',
+              'Seleccionar solicitud',
               style: TextStyle(
                 fontSize: 24.0,
                 fontWeight: FontWeight.bold,
