@@ -9,17 +9,34 @@ class EditProfilePage extends StatefulWidget {
   final String userEmail;
 
   EditProfilePage({required this.userEmail});
+
   @override
   _EditProfilePageState createState() => _EditProfilePageState();
 }
 
 class _EditProfilePageState extends State<EditProfilePage> {
-  final TextEditingController _phoneNumberController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  String? _profileImageUrl;
-  File? _pickedImage;
-  bool _editingPhone = false;
-  bool _editingPassword = false;
+  bool _isEditingProfileImage = false;
+  bool _isEditingPhone = false;
+  bool _isEditingPassword = false;
+  bool _isEditingName = false;
+  bool _isEditingLastName = false;
+  bool _isEditingCarrera = false;
+
+  TextEditingController _phoneNumberController = TextEditingController();
+  TextEditingController _passwordController = TextEditingController();
+  TextEditingController _nameController = TextEditingController();
+  TextEditingController _lastNameController = TextEditingController();
+  TextEditingController _carreraController = TextEditingController();
+
+  String _profileImageUrl = ''; // URL de la imagen de perfil (reemplaza con la imagen real)
+  String nombres = '';
+  String apellidos = '';
+  String phoneNumber = '';
+  String carrera = '';
+  // Y otros datos del usuario que necesites...
+
+  File? _imageFile;
+  late DocumentReference _userDocument;// Archivo de imagen seleccionado
 
   @override
   void initState() {
@@ -31,14 +48,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
     try {
       User? user = FirebaseAuth.instance.currentUser;
       if (user != null) {
-        DocumentSnapshot userData =
-        await FirebaseFirestore.instance.collection('usuarios').doc(user.uid).get();
+        _userDocument = FirebaseFirestore.instance.collection('usuarios').doc(user.uid);
+        DocumentSnapshot userData = await _userDocument.get();
         setState(() {
-          _phoneNumberController.text = userData['numeroTelefono'] ?? '';
-          // Obtener otros datos del usuario y mostrarlos en los campos correspondientes
-          String nombres = userData['nombres'] ?? '';
-          String apellidos = userData['apellidos'] ?? '';
-          String carrera = userData['carrera'] ?? '';
+          nombres = userData['nombres'];
+          apellidos = userData['apellidos'];
+          phoneNumber = userData['numeroTelefono'];
+          carrera = userData['carrera'];
           _profileImageUrl = userData['image'];
         });
       }
@@ -47,135 +63,25 @@ class _EditProfilePageState extends State<EditProfilePage> {
     }
   }
 
-  Future<void> savePhoneNumber() async {
+
+  Future<void> saveChanges() async {
     try {
-      String phoneNumber = _phoneNumberController.text.trim();
-      if (!isValidPhoneNumber(phoneNumber)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('El número de teléfono no es válido.'),
-            backgroundColor: Colors.red,
-          ),
-        );
-        return;
-      }
-
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        await FirebaseFirestore.instance.collection('usuarios').doc(user.uid).update({
-          'numeroTelefono': phoneNumber,
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Número de teléfono actualizado correctamente.'),
-            backgroundColor: Colors.green,
-          ),
-        );
-        setState(() {
-          _editingPhone = false;
-        });
-      }
-    } catch (e) {
-      print('Error al guardar el número de teléfono: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error al actualizar el número de teléfono.'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  }
-
-  Future<void> changePassword() async {
-    try {
-      String newPassword = _passwordController.text.trim();
-      if (newPassword.length < 8) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('La contraseña debe tener al menos 8 caracteres.'),
-            backgroundColor: Colors.red,
-          ),
-        );
-        return;
-      }
-
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        await user.updatePassword(newPassword);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Contraseña actualizada correctamente.'),
-            backgroundColor: Colors.green,
-          ),
-        );
-        setState(() {
-          _editingPassword = false;
-        });
-      }
-    } catch (e) {
-      print('Error al cambiar la contraseña: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error al cambiar la contraseña.'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  }
-
-  bool isValidPhoneNumber(String phoneNumber) {
-    // Verificar que el número de teléfono tenga 10 dígitos y empiece con '30', '31' o '32'
-    RegExp regExp = RegExp(r'^(30|31|32)\d{8}$');
-    return regExp.hasMatch(phoneNumber);
-  }
-
-  Future<void> _pickImage() async {
-    final picker = ImagePicker();
-    final pickedImage = await picker.pickImage(source: ImageSource.gallery);
-
-    if (pickedImage != null) {
-      setState(() {
-        _pickedImage = File(pickedImage.path);
+      await _userDocument.update({
+        'nombres': nombres,
+        'apellidos': apellidos,
+        'numeroTelefono': phoneNumber,
+        'carrera': carrera,
+        // Aquí puedes agregar más campos que desees actualizar en Firestore.
       });
-    }
-  }
 
-  Future<void> _uploadImageToFirestore() async {
-    if (_pickedImage == null) return;
-
-    try {
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        String fileName = '${user.uid}_${DateTime.now().millisecondsSinceEpoch}.jpg';
-        firebase_storage.Reference reference =
-        firebase_storage.FirebaseStorage.instance.ref('perfil/$fileName');
-        await reference.putFile(_pickedImage!);
-        String imageUrl = await reference.getDownloadURL();
-
-        await FirebaseFirestore.instance.collection('usuarios').doc(user.uid).update({
-          'image': imageUrl,
-        });
-
-        setState(() {
-          _profileImageUrl = imageUrl;
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Imagen de perfil actualizada.'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Cambios guardados correctamente.'),
+      ));
     } catch (e) {
-      print('Error al actualizar la imagen de perfil: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error al actualizar la imagen de perfil.'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Error al guardar los cambios.'),
+      ));
+      print('Error al guardar los cambios: $e');
     }
   }
 
@@ -183,63 +89,120 @@ class _EditProfilePageState extends State<EditProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Colors.lightBlueAccent,
-                Colors.lightGreen,
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-        ),
-        title: Text(
-          'Edita tu perfil',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        title: Text('Editar Perfil'),
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            CircleAvatar(
-              radius: 60.0,
-              backgroundImage: _profileImageUrl != null ? NetworkImage(_profileImageUrl!) : null,
+            InkWell(
+              onTap: _pickImage, // Llamamos a la función para seleccionar una imagen
+              child: CircleAvatar(
+                radius: 60.0,
+                backgroundImage: _imageFile != null
+                    ? FileImage(_imageFile!) as ImageProvider<Object>?
+                    : (_profileImageUrl.isNotEmpty ? NetworkImage(_profileImageUrl) as ImageProvider<Object>? : null),
+              ),
             ),
             SizedBox(height: 16.0),
-            _buildUserInfoField('Nombres:', 'Nombre del usuario'),
-            _buildUserInfoField('Apellidos:', 'Apellidos del usuario'),
-            _buildUserInfoField('Teléfono:', _editingPhone ? _phoneNumberController.text : 'Número de teléfono del usuario'),
-            _buildUserInfoField('Email:', widget.userEmail),
-            _buildUserInfoField(
+            Text(
+              nombres,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 16.0),
+            _buildInfoField('Nombres:', nombres,
+              isEditable: _isEditingName,
+              controller: _nameController,
+              onEdit: () {
+                setState(() {
+                  _isEditingName = true;
+                  _nameController.text = nombres;
+                });
+              },
+              onSave: () {
+                setState(() {
+                  nombres = _nameController.text.trim();
+                  _isEditingName = false;
+                });
+              },
+            ),
+            _buildInfoField('Apellidos:', apellidos,
+              isEditable: _isEditingLastName,
+              controller: _lastNameController,
+              onEdit: () {
+                setState(() {
+                  _isEditingLastName = true;
+                  _lastNameController.text = apellidos;
+                });
+              },
+              onSave: () {
+                setState(() {
+                  apellidos = _lastNameController.text.trim();
+                  _isEditingLastName = false;
+                });
+              },
+            ),
+            _buildInfoField(
+              'Número de Teléfono:',
+              _isEditingPhone ? _phoneNumberController.text : phoneNumber,
+              isEditable: _isEditingPhone,
+              controller: _phoneNumberController,
+              onEdit: () {
+                setState(() {
+                  _isEditingPhone = true;
+                  _phoneNumberController.text = phoneNumber;
+                });
+              },
+              onSave: () {
+                setState(() {
+                  phoneNumber = _phoneNumberController.text.trim();
+                  _isEditingPhone = false;
+                });
+              },
+            ),
+            _buildInfoField('Email:', widget.userEmail),
+            _buildInfoField(
               'Contraseña:',
-              _editingPassword ? _passwordController.text.replaceAll(RegExp(r'.'), '*') : '********',
+              _isEditingPassword ? _passwordController.text.replaceAll(RegExp(r'.'), '*') : '********',
+              isEditable: _isEditingPassword,
+              controller: _passwordController,
+              onEdit: () {
+                setState(() {
+                  _isEditingPassword = true;
+                  _passwordController.text = ''; // Puedes cargar la contraseña actual aquí para editarla
+                });
+              },
+              onSave: () {
+                setState(() {
+                  // Aquí guardas la nueva contraseña en la base de datos
+                  _isEditingPassword = false;
+                });
+              },
             ),
-            _buildUserInfoField('Carrera:', 'Carrera del usuario'),
-            SizedBox(height: 16.0),
-            _editingPhone
-                ? ElevatedButton(
-              onPressed: () => savePhoneNumber(),
-              child: Text('Guardar número de teléfono'),
-            )
-                : IconButton(
-              onPressed: () => setState(() => _editingPhone = true),
-              icon: Icon(Icons.edit),
+            _buildInfoField('Carrera:', carrera,
+              isEditable: _isEditingCarrera,
+              controller: _carreraController,
+              onEdit: () {
+                setState(() {
+                  _isEditingCarrera = true;
+                  _carreraController.text = carrera;
+                });
+              },
+              onSave: () {
+                setState(() {
+                  carrera = _carreraController.text.trim();
+                  _isEditingCarrera = false;
+                });
+              },
             ),
             SizedBox(height: 16.0),
-            _editingPassword
-                ? ElevatedButton(
-              onPressed: () => changePassword(),
-              child: Text('Guardar contraseña'),
-            )
-                : IconButton(
-              onPressed: () => setState(() => _editingPassword = true),
-              icon: Icon(Icons.edit),
+            ElevatedButton(
+              onPressed: saveChanges,
+              child: Text('Guardar Cambios'),
             ),
           ],
         ),
@@ -247,36 +210,71 @@ class _EditProfilePageState extends State<EditProfilePage> {
     );
   }
 
-  Widget _buildUserInfoField(String label, String value) {
-    return Container(
-      width: 300,
-      padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(30),
-        boxShadow: [
-          BoxShadow(
-            blurRadius: 2,
-            spreadRadius: 2,
-            offset: Offset(1, 1),
-            color: Colors.grey.withOpacity(0.2),
-          ),
-        ],
+  Widget _buildInfoField(String label, String value,
+      {bool isEditable = false, TextEditingController? controller, Function()? onEdit, Function()? onSave}) {
+    return ListTile(
+      title: Text(
+        label,
+        style: TextStyle(fontWeight: FontWeight.bold),
       ),
-      child: Row(
+      subtitle: isEditable
+          ? TextFormField(
+        controller: isEditable ? controller : null,
+        keyboardType: TextInputType.text,
+        obscureText: label.contains('Contraseña'),
+        decoration: InputDecoration(
+          hintText: value,
+        ),
+      )
+          : Text(value),
+      trailing: isEditable
+          ? Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-            ),
+          IconButton(
+            icon: Icon(Icons.check),
+            onPressed: () {
+              if (onSave != null) {
+                onSave();
+              }
+            },
           ),
-          SizedBox(width: 8.0),
-          Expanded(
-            child: Text(value),
+          IconButton(
+            icon: Icon(Icons.cancel),
+            onPressed: () {
+              setState(() {
+                _isEditingPhone = false;
+                _isEditingPassword = false;
+                _isEditingName = false;
+                _isEditingLastName = false;
+                _isEditingCarrera = false;
+              });
+            },
           ),
         ],
-      ),
+      )
+          : onEdit != null
+          ? IconButton(
+        icon: Icon(Icons.edit),
+        onPressed: () {
+          if (onEdit != null) {
+            onEdit();
+          }
+        },
+      )
+          : null,
     );
+  }
+
+  // Función para seleccionar una imagen
+  Future<void> _pickImage() async {
+    final ImagePicker _picker = ImagePicker();
+    XFile? pickedImage = await _picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedImage != null) {
+      setState(() {
+        _imageFile = File(pickedImage.path);
+      });
+    }
   }
 }
