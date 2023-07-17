@@ -298,7 +298,7 @@ class _RentingPageState extends State<RentingPage> {
         List<String> newOffers = List.from(currentOffers)..add(selectedItemId!);
 
         FirebaseFirestore.instance
-            .collection('items_solicitados')
+            .collection('items')
             .doc(offerId)
             .update({'solicitudes': newOffers})
             .then((_) {
