@@ -5,7 +5,8 @@ import 'package:rentuis/pages/request_page.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:rentuis/pages/edit_profile_page.dart';
-
+import 'mis_solicitudes.dart'; 
+import 'mis_rentas.dart';
 
 class HomePage extends StatefulWidget {
   final String userEmail;
@@ -19,6 +20,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   String? userFullName;
   String? imagePath;
+  String? userId;
   int selectedIndex = 1;
 
   @override
@@ -26,6 +28,7 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     fetchUserData();
     getDeviceToken();
+    _getUserId();
 
   }
   void getDeviceToken() async {
@@ -174,7 +177,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ],
               ),
-              child: Row(
+              child: const Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Icon(
@@ -214,7 +217,7 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(height: 16.0),
             Container(
               width: 370,
-              padding: const EdgeInsets.symmetric(horizontal: 16.0,vertical: 20.0),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0,vertical: 5.0),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(30),
@@ -233,28 +236,111 @@ class _HomePageState extends State<HomePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    padding: const EdgeInsets.only(top:5.0,bottom:20),
-                    child:const Text(
-                      "Tus solicitudes",
-                      style: TextStyle(
-                        color:Colors.black,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
-                      ),
+                    padding: const EdgeInsets.only(top:1.0,bottom:2),
+                    child:Row(
+                      children: [
+                        Container(
+                          child: TextButton(
+                            onPressed: (){
+                                Navigator.push(
+                                context, 
+                                MaterialPageRoute(builder: (context) => MisSolicitudes(userEmail:widget.userEmail,),),
+                              );
+                            },
+                            child:const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'Tus solicitudes',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                Icon(Icons.arrow_forward),
+                              ],
+                            ), 
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      crearRecuadro(index: 0),
-                      crearRecuadro(index: 1),
-                      crearRecuadro(index: 2),
+                     crearRecuadro(index: 0, userId: widget.userEmail,collection: 'items_solicitados'),
+                     crearRecuadro(index: 1, userId: widget.userEmail,collection: 'items_solicitados'),
+                     crearRecuadro(index: 2, userId: widget.userEmail,collection: 'items_solicitados'),
                     ],
                   ),
                 ],
               ),
             ),
+          //Historial ofertas
+          const SizedBox(height: 13.0),
+            Container(
+              width: 370,
+              padding: const EdgeInsets.symmetric(horizontal: 16.0,vertical: 5.0),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(30),
+                boxShadow: [
+                  BoxShadow(
+                    blurRadius: 2,
+                    spreadRadius: 2,
+                    offset: const Offset(1, 1),
+                    color: Colors.grey.withOpacity(0.2),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisSize: MainAxisSize.max,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.only(top:3.0,bottom:2.0),
+                    child:Row(
+                      children: [
+                        Container(
+                          child: TextButton(
+                            onPressed: (){
+                                Navigator.push(
+                                context, 
+                                MaterialPageRoute(builder: (context) => MisRentas(userEmail:widget.userEmail,),),
+                              );
+                            },
+                            child:const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'Tus rentas',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                Icon(Icons.arrow_forward),
+                              ],
+                            ), 
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                     crearRecuadro(index: 0, userId: userId ?? '',collection: 'items'),
+                     crearRecuadro(index: 1, userId: userId ?? '',collection: 'items'),
+                     crearRecuadro(index: 2, userId: userId ?? '',collection: 'items'),
+                    ],
+                  ),
+                ],
+              ),
+            ),    
             const SizedBox(height: 16.0),
             const Expanded(
               child: SingleChildScrollView(
@@ -315,93 +401,157 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+
+  Future<List<QueryDocumentSnapshot>> _getItemsWithConditions(String collection) async {
+  final QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+      .collection(collection)
+      .where('image', isNotEqualTo: null) // Filtrar por el campo "image" existente (no nulo)
+      .get();
+  return querySnapshot.docs;
 }
-Widget crearRecuadro({required int index}) {
-  return FutureBuilder<QuerySnapshot>(
-    future: FirebaseFirestore.instance.collection('items').limit(3).get(),
-    builder: (context, snapshot) {
-      if (snapshot.connectionState == ConnectionState.waiting) {
-        return const Center(
-          child: CircularProgressIndicator(),
-        );
-      } else if (snapshot.hasError) {
-        return const Center(
-          child: Text('Error al cargar los datos'),
-        );
-      } else if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
-        // Verificar que el índice esté dentro del rango de documentos disponibles
-        if (index >= 0 && index < snapshot.data!.docs.length) {
-          var document = snapshot.data!.docs[index];
-          String imageUrl = document['image'];
-          String itemName = document['name'];
-          return Column(
-            children: [
-              Stack(
-                children: [
-                  DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [Colors.lightBlueAccent, Colors.lightGreen],
-                      ),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Container(
-                      width: 100,
-                      height: 100,
-                    ),
-                  ),
-                  Positioned(
-                    top: 10,
-                    left: 10,
-                    child: Container(
-                      width: 80,
-                      height: 80,
+
+  Widget crearRecuadro({required int index, required String userId, required String collection}) {
+    return FutureBuilder<List<QueryDocumentSnapshot>>(
+      future: _getItemsWithConditions(collection),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return CircularProgressIndicator();
+        } else if (snapshot.hasError) {
+          return Text('Error al cargar los datos');
+        } else if (snapshot.hasData) {
+          final itemsWithConditions = snapshot.data!;
+          List<QueryDocumentSnapshot> filteredItems = itemsWithConditions
+              .where((document) => document['userId'] == userId)
+              .toList();
+
+          if (index >= 0 && index < filteredItems.length) {
+            var document = filteredItems[index];
+            String imageUrl = document['image'];
+
+            return Column(
+              children: [
+                Stack(
+                  children: [
+                    DecoratedBox(
                       decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.black,
-                          width: 3,
+                        gradient: const LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [Colors.lightBlueAccent, Colors.lightGreen],
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Container(
+                        width: 100,
+                        height: 100,
+                      ),
+                    ),
+                    Positioned(
+                      top: 10,
+                      left: 10,
+                      child: Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Colors.black,
+                            width: 3,
+                          ),
+                        ),
+                        child: CircleAvatar(
+                          radius: 40,
+                          backgroundColor: Colors.white,
+                          backgroundImage: NetworkImage(imageUrl),
                         ),
                       ),
-                      child: CircleAvatar(
-                        radius: 40,
-                        backgroundColor: Colors.white,
-                        backgroundImage: imageUrl != null ? NetworkImage(imageUrl) : null,
-                      ),
                     ),
-                  ),
-                ],
-              ),
-              if (imageUrl != null)
+                  ],
+                ),
                 Padding(
                   padding: const EdgeInsets.only(top: 8.0),
                   child: Text(
-                    itemName,
+                    document['name'],
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
-            ],
-          );
+              ],
+            );
+          }
         }
-      }
 
-      // Mostrar el contenedor verde sin la imagen si no se encontró el documento o el campo "imageUrl" es null
-      return Container(
-        width: 100,
-        height: 100,
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Colors.lightBlueAccent, Colors.lightGreen],
-          ),
-          borderRadius: BorderRadius.circular(10),
-        ),
-      );
-    },
-  );
+        // Mostrar el contenedor verde sin la imagen y con la palabra "Vacío" debajo del recuadro
+        return Column(
+          children: [
+            Stack(
+              children: [
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [Colors.lightBlueAccent, Colors.lightGreen],
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Container(
+                    width: 100,
+                    height: 100,
+                  ),
+                ),
+                Positioned(
+                  top: 10,
+                  left: 10,
+                  child: Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.black,
+                        width: 3,
+                      ),
+                    ),
+                    child: const CircleAvatar(
+                      radius: 40,
+                      backgroundColor: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const Padding(
+              padding: const EdgeInsets.only(top: 8.0),
+              child: Text(
+                'Vacío',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _getUserId() async {
+    final QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('usuarios')
+        .where('email', isEqualTo: widget.userEmail)
+        .get();
+
+    if (querySnapshot.docs.isNotEmpty) {
+      final DocumentSnapshot userDoc = querySnapshot.docs.first;
+      setState(() {
+        userId = userDoc.get('id');
+      });
+    } else {
+      print('No se encontró un usuario con el correo electrónico proporcionado.');
+    }
+  }
+
 }
+
