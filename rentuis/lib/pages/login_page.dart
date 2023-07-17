@@ -108,6 +108,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void navigateToPasswordRecovery(BuildContext context) {
+    final String email = emailController.text.trim();
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => PasswordRecoveryPage()),
@@ -130,7 +131,7 @@ class _LoginPageState extends State<LoginPage> {
               decoration: BoxDecoration(
                 image: DecorationImage(
                   image: AssetImage('assets/header_3.png'),
-                  fit: BoxFit.fitWidth,
+                  fit: BoxFit.cover,
                 ),
               ),
             ),

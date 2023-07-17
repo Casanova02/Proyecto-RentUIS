@@ -28,6 +28,7 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+
   flutter:
     sdk: flutter
   firebase_core: ^2.14.0
@@ -48,6 +49,7 @@ dependencies:
   intl: "0.17.0"
   firebase_analytics: ^10.4.4
   flutter_local_notifications: ^15.1.0+1
+  google_fonts: ^5.1.0
 
 
 dev_dependencies:
@@ -78,6 +80,7 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+
 
   # To add assets to your application, add an assets section, like this:
   # assets:

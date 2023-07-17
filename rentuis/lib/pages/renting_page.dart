@@ -3,21 +3,22 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:intl/intl.dart';
 import 'add_offer_page.dart';
 
-class OffersPage extends StatefulWidget {
+class RentingPage extends StatefulWidget {
   final String userEmail;
   final String offerId;
 
-  OffersPage({required this.userEmail, required this.offerId});
+  RentingPage({required this.userEmail, required this.offerId});
 
   @override
-  _OffersPageState createState() => _OffersPageState();
+  _RentingPageState createState() => _RentingPageState();
 }
 
-class _OffersPageState extends State<OffersPage> {
+class _RentingPageState extends State<RentingPage> {
   String? userId;
-  List<Map<String, dynamic>> userOffers = [];
+  List<Map<String, dynamic>> userRequest = [];
   String? selectedItemId;
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
   String? _deviceToken;
@@ -38,21 +39,21 @@ class _OffersPageState extends State<OffersPage> {
     if (querySnapshot.docs.isNotEmpty) {
       final DocumentSnapshot userDoc = querySnapshot.docs.first;
       userId = userDoc.get('id');
-      _getUserOffers();
+      _getUserRequest();
     } else {
       print('No se encontró un usuario con el correo electrónico proporcionado.');
     }
   }
 
-  void _getUserOffers() {
+  void _getUserRequest() {
     if (userId != null) {
       FirebaseFirestore.instance
-          .collection('items')
+          .collection('items_seleccionados')
           .where('userId', isEqualTo: userId)
           .get()
           .then((QuerySnapshot snapshot) {
         setState(() {
-          userOffers = snapshot.docs
+          userRequest = snapshot.docs
               .map((DocumentSnapshot document) {
             Map<String, dynamic> data = document.data() as Map<String, dynamic>;
             data['itemId'] = document.id; // Agregar el campo 'itemId' con el valor del ID del documento
@@ -79,7 +80,7 @@ class _OffersPageState extends State<OffersPage> {
 
   void getDeviceToken(String offerId) async {
     final DocumentSnapshot offerSnapshot = await FirebaseFirestore.instance
-        .collection('items_solicitados')
+        .collection('items')
         .doc(offerId)
         .get();
 
@@ -120,8 +121,8 @@ class _OffersPageState extends State<OffersPage> {
 
     final body = {
       'notification': {
-        'title': 'Nueva oferta',
-        'body': '¡Tienes una nueva oferta para tu solicitud!',
+        'title': 'Nueva solicitud de renta',
+        'body': '¡Tienes una nueva solicitud para tu renta!',
       },
       'to': deviceToken,
     };
@@ -152,7 +153,7 @@ class _OffersPageState extends State<OffersPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Ofertas'),
+        title: Text('Rentas'),
       ),
       body: Column(
         children: [
@@ -160,7 +161,7 @@ class _OffersPageState extends State<OffersPage> {
             alignment: Alignment.center,
             margin: EdgeInsets.only(top: 120.0),
             child: Text(
-              'Seleccionar oferta',
+              'Seleccionar renta',
               style: TextStyle(
                 fontSize: 24.0,
                 fontWeight: FontWeight.bold,
@@ -169,9 +170,9 @@ class _OffersPageState extends State<OffersPage> {
           ),
           Expanded(
             child: ListView.builder(
-              itemCount: userOffers.length,
+              itemCount: userRequest.length,
               itemBuilder: (context, index) {
-                return _buildOfferCard(userOffers[index], widget.offerId);
+                return _buildOfferCard(userRequest[index], widget.offerId);
               },
             ),
           ),
@@ -205,12 +206,23 @@ class _OffersPageState extends State<OffersPage> {
 
   Widget _buildOfferCard(Map<String, dynamic> offerData, String offerId) {
     String itemName = offerData['name'];
-    int itemPrice = offerData['price'];
-    String itemTimeUnit = offerData['time_unit'];
-    int? itemRating = offerData['rating'];
+    String startDateString = offerData['start_date'];
+    String startTimeString = offerData['start_time'];
+    String endDateString = offerData['end_date'];
+    String endTimeString = offerData['end_time'];
+    int itemRating = offerData['rating'] ?? 1; // Valor predeterminado de 0 si es nulo
     String imagePath = offerData['image'];
     String itemId = offerData['itemId']; // Obtene
 
+    DateTime startDate = DateFormat('dd/MM/yy').parse(startDateString);
+    DateTime startTime = DateFormat('h:mm a').parse(startTimeString);
+    DateTime endDate = DateFormat('dd/MM/yy').parse(endDateString);
+    DateTime endTime = DateFormat('h:mm a').parse(endTimeString);
+
+    String formattedStartDate = DateFormat('dd/MM/yy - hh:mm a').format(DateTime(
+        startDate.year, startDate.month, startDate.day, startTime.hour, startTime.minute));
+    String formattedEndDate = DateFormat('dd/MM/yy - hh:mm a').format(DateTime(
+        endDate.year, endDate.month, endDate.day, endTime.hour, endTime.minute));
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 40.0, vertical: 8.0),
       child: Card(
@@ -227,44 +239,42 @@ class _OffersPageState extends State<OffersPage> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Padding(
-                padding: EdgeInsets.only(bottom: 8.0),
+                padding: const EdgeInsets.all(8.0),
                 child: Text(
                   itemName,
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 18, // Tamaño de fuente personalizado
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
+              Text(formattedStartDate),
+              Text(formattedEndDate),
               Padding(
-                padding: EdgeInsets.only(bottom: 8.0),
-                child: Text('\$$itemPrice/$itemTimeUnit'),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(itemRating ?? 0, (index) {
-                  return Icon(Icons.star, color: Colors.yellow);
-                }),
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(itemRating, (index) {
+                    return Icon(Icons.star, color: Colors.yellow);
+                  }),
+                ),
               ),
             ],
           ),
-          trailing: Container(
-            constraints: BoxConstraints(maxWidth: 110.0),
-            child: ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  selectedItemId = itemId; // Asignar el ID del item seleccionado a la variable selectedItemId
-                });
-                _showSuccessNotification();
-                getDeviceToken(offerId); // Llama a la función getDeviceToken con el offerId
-                print('Oferta seleccionada: $itemName');
-                _updateItemOfferId(widget.offerId);
-              },
-              child: Text('Seleccionar'),
-              style: ElevatedButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15.0),
-                ),
+          trailing: ElevatedButton(
+            onPressed: () {
+              setState(() {
+                selectedItemId = itemId; // Asignar el ID del item seleccionado a la variable selectedItemId
+              });
+              _showSuccessNotification();
+              getDeviceToken(offerId); // Llama a la función getDeviceToken con el offerId
+              print('Oferta seleccionada: $itemName');
+              _updateItemOfferId(widget.offerId);
+            },
+            child: Text('Seleccionar'),
+            style: ElevatedButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15.0),
               ),
             ),
           ),
@@ -277,19 +287,19 @@ class _OffersPageState extends State<OffersPage> {
   }
   void _updateItemOfferId(String offerId) {
     FirebaseFirestore.instance
-        .collection('items_solicitados')
+        .collection('items')
         .doc(offerId)
         .get()
         .then((DocumentSnapshot snapshot) {
       if (snapshot.exists) {
         // El documento existe, puedes acceder y actualizar el campo "ofertas"
-        List<String> currentOffers = List<String>.from(snapshot.get('ofertas'));
+        List<String> currentOffers = List<String>.from(snapshot.get('solicitudes'));
         List<String> newOffers = List.from(currentOffers)..add(selectedItemId!);
 
         FirebaseFirestore.instance
             .collection('items_solicitados')
             .doc(offerId)
-            .update({'ofertas': newOffers})
+            .update({'solicitudes': newOffers})
             .then((_) {
           print('ID del item guardado correctamente para el offerId: $offerId');
         }).catchError((error) {

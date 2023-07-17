@@ -569,4 +569,3 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
     );
   }
 }
-

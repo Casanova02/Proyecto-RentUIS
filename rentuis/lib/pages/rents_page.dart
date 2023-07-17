@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:rentuis/pages/renting_page.dart';
 import 'package:rentuis/pages/request_page.dart';
 import 'package:flutter/painting.dart';
 import 'add_offer_page.dart';
@@ -120,7 +121,19 @@ class _RentPageState extends State<RentPage> {
                                 ),
                                 trailing: ElevatedButton(
                                   onPressed: () {
-                                    print('Rentar presionado en el artículo $itemName');
+
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => RentingPage(
+                                          userEmail: widget.userEmail,
+                                          offerId: document.id,
+                                        ),
+
+                                      ),
+                                    );
+                                    print('Valor de offerId: ${document.id}');
+
                                   },
                                   child: Text('Rentar'),
                                   style: ElevatedButton.styleFrom(

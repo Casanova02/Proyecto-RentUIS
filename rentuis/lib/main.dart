@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:rentuis/pages/login_page.dart';
 import 'package:rentuis/pages/password_recovery_page.dart';
 import 'package:rentuis/pages/registration_page.dart';
@@ -30,6 +31,7 @@ class RentUISApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'RentUIS',
       theme: ThemeData(
+        fontFamily: GoogleFonts.openSans().fontFamily,
         primarySwatch: Colors.lightGreen,
         colorScheme: ColorScheme.fromSwatch().copyWith(
           secondary: Colors.lightGreenAccent,

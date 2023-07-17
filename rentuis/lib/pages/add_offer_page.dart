@@ -131,6 +131,7 @@ class _AddOfferPageState extends State<AddOfferPage> {
         'description': description,
         'rating': rating,
         'image': imageUrl,
+        'solicitudes':[],
       });
 
       // Mostrar la notificación de éxito

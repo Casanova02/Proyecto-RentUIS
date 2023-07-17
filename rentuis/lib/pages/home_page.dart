@@ -4,6 +4,7 @@ import 'package:rentuis/pages/rents_page.dart';
 import 'package:rentuis/pages/request_page.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:rentuis/pages/edit_profile_page.dart';
 
 
 class HomePage extends StatefulWidget {
@@ -94,6 +95,18 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
         title: Text('RentUIS'),
+        actions: [
+          // Agregar un IconButton que lleve a la página de edición de perfil
+          IconButton(
+            icon: Icon(Icons.edit),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => EditProfilePage(userEmail: widget.userEmail)),
+              );
+            },
+          ),
+        ],
       ),
       body: Center(
         child: Column(
