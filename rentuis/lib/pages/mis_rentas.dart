@@ -17,7 +17,7 @@ class MisRentas extends StatefulWidget {
 
 class _MisRentasPageState extends State<MisRentas> {
   late double _deviceHeight, _deviceWidth;
-  String? userId;
+  String? userEmail;
   final UserSession userSession = UserSession();
   List<Map<String, dynamic>> userOffers = [];
 
@@ -51,8 +51,8 @@ class _MisRentasPageState extends State<MisRentas> {
       body: Container(
         width: _deviceWidth,
         height: _deviceHeight,
-        child: userId != null
-            ? MyListView(userId: userId!)
+        child: userEmail != null
+            ? MyListView(userId: widget.userEmail!)
             : const Center(
                 child: CircularProgressIndicator(),
               ),
@@ -69,7 +69,7 @@ class _MisRentasPageState extends State<MisRentas> {
     if (querySnapshot.docs.isNotEmpty) {
       final DocumentSnapshot userDoc = querySnapshot.docs.first;
       setState(() {
-        userId = userDoc.get('id');
+        userEmail = userDoc.get('id');
       });
     } else {
       print('No se encontró un usuario con el correo electrónico proporcionado.');

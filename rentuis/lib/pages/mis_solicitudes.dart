@@ -77,6 +77,7 @@ class _MisSolicitudesPageState extends State<MisSolicitudes> {
     }
   }
 }
+
 class MyListView extends StatelessWidget {
   final String userEmail;
 
@@ -108,12 +109,12 @@ class MyListView extends StatelessWidget {
           itemCount: documents.length,
           itemBuilder: (context, index) {
             final data = documents[index].data() as Map<String, dynamic>;
-            final name = data['name']; // Accedemos al campo 'name' del documento
-            final imageUrl = data['image']; // URL de la imagen
-            final startDate = data['start_date']; // Fecha de inicio
-            final endDate = data['end_date']; // Fecha de fin
+            final name = data['name'];
+            final imageUrl = data['image'];
+            final startDate = data['start_date'];
+            final endDate = data['end_date'];
             final rating = data['rating'];
-            final ofertas = data['ofertas'];
+            final ofertas = data['ofertas']; // Obtenemos la lista de ofertas
 
             return Container(
               width: 370,
@@ -181,69 +182,78 @@ class MyListView extends StatelessWidget {
                             style: const TextStyle(
                               color: Colors.black,
                               fontSize: 18.0,
-                              fontWeight: FontWeight.bold, // Negrita para el nombre
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const SizedBox(height: 8), // Espacio entre el nombre y la fecha
+                          const SizedBox(height: 8),
                           Text(
-                            'Fecha de inicio: $startDate', // Mostrar la fecha de inicio
+                            'Fecha de inicio: $startDate',
                             style: const TextStyle(
                               color: Colors.black,
                               fontSize: 16.0,
                             ),
                           ),
                           Text(
-                            'Fecha de fin: $endDate', // Mostrar la fecha de fin
+                            'Fecha de fin: $endDate',
                             style: const TextStyle(
                               color: Colors.black,
                               fontSize: 16.0,
                             ),
                           ),
                           Text(
-                            'Rating: $rating', // Mostrar la fecha de fin
+                            'Rating: $rating',
                             style: const TextStyle(
                               color: Colors.black,
                               fontSize: 16.0,
                             ),
                           ),
-
-                          
-                          const SizedBox(height: 8), // Espacio entre el rating y el botón
+                          Text(
+                            'Ofertas: ${ofertas.length}',
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontSize: 16.0,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
                           Container(
-                            width: 120, // Ancho del botón
-                            height: 35, // Alto del botón
-                            child:Container(
-                          // Utilizamos otro Container para aplicar el degradado
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Colors.lightBlueAccent, Colors.lightGreen], // Gradiente de colores
-                              begin: Alignment.centerLeft, // Comienza desde el centro-izquierda
-                              end: Alignment.centerRight, // Termina en el centro-derecha
-                            ),
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          child: TextButton(
-                            onPressed: () {
-                                Navigator.push(
-                                context, 
-                                MaterialPageRoute(builder: (context) => MisOfertas(userEmail:userEmail,ofertas: ofertas,),),
-                              );
-                            },
-                            style: TextButton.styleFrom(
-                              padding: const EdgeInsets.all(8.0),
-                              shape: RoundedRectangleBorder(
+                            width: 120,
+                            height: 35,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [Colors.lightBlueAccent, Colors.lightGreen],
+                                  begin: Alignment.centerLeft,
+                                  end: Alignment.centerRight,
+                                ),
                                 borderRadius: BorderRadius.circular(30),
                               ),
-                            ),
-                            child: const Text(
-                              'Ver ofertas',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 16.0,
+                              child: TextButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => MisOfertas(
+                                        userEmail: userEmail,
+                                        ofertas: ofertas,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                style: TextButton.styleFrom(
+                                  padding: const EdgeInsets.all(8.0),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(30),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'Ver ofertas',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16.0,
+                                  ),
                                 ),
                               ),
                             ),
-                          )
                           ),
                         ],
                       ),
@@ -258,6 +268,7 @@ class MyListView extends StatelessWidget {
     );
   }
 }
+
 
 
 
