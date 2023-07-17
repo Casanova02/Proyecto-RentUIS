@@ -3,7 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:firebase_messaging/firebase_messaging.dart';
-
 import 'add_offer_page.dart';
 
 class OffersPage extends StatefulWidget {
@@ -27,7 +26,7 @@ class _OffersPageState extends State<OffersPage> {
   void initState() {
     super.initState();
     _getUserId();
-    _initFirebaseMessaging();
+    _initFirebaseMessaging(); // Agrega esta línea para inicializar el servicio de mensajería.
   }
 
   void _getUserId() async {
@@ -143,6 +142,7 @@ class _OffersPageState extends State<OffersPage> {
       sendPushNotificationToDevice(_deviceToken!);
     }
   }
+
 
   @override
   Widget build(BuildContext context) {

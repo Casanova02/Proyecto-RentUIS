@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
+
 class RegistrationPage extends StatefulWidget {
   @override
   _RegistrationPageState createState() => _RegistrationPageState();
@@ -85,7 +86,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
     try {
       // Registrar usuario en Firebase Authentication
       UserCredential userCredential =
-          await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: emailController.text.trim(),
         password: contrasenaController.text.trim(),
       );
@@ -106,13 +107,13 @@ class _RegistrationPageState extends State<RegistrationPage> {
         'numeroTelefono': numeroTelefonoController.text.trim(),
         'carrera': carreraValue,
         'contraseña': contrasenaController.text,
-        'rating':5,
+        'rating': 5,
         'image': imageUrl,
       });
 
       // Mostrar mensaje de éxito y redirigir a la página de inicio de sesión
       _showSuccessMessage();
-      Navigator.pushReplacementNamed(context, '/');
+      _redirectToLoginPage();
     } catch (e) {
       print('Error al registrar usuario: $e');
     }
@@ -127,6 +128,10 @@ class _RegistrationPageState extends State<RegistrationPage> {
     );
   }
 
+  void _redirectToLoginPage() {
+    Navigator.pushReplacementNamed(context, '/'); // Ajusta la ruta según tu implementación
+  }
+
   Future<void> pickImage(ImageSource source) async {
     XFile? imageFile = await ImagePicker().pickImage(source: source);
     if (imageFile != null) {
@@ -135,7 +140,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
       });
     }
   }
-    Future<String> uploadImageToFirebaseStorage(File file) async {
+
+  Future<String> uploadImageToFirebaseStorage(File file) async {
     firebase_storage.Reference ref = firebase_storage.FirebaseStorage.instance
         .ref()
         .child('images')

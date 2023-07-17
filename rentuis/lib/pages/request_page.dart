@@ -133,7 +133,7 @@ class _RequestPageState extends State<RequestPage> {
                             ),
                             trailing: ElevatedButton(
                               onPressed: () {
-                                
+
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
@@ -141,7 +141,7 @@ class _RequestPageState extends State<RequestPage> {
                                       userEmail: widget.userEmail,
                                       offerId: document.id,
                                     ),
-                                    
+
                                   ),
                                 );
                                 print('Valor de offerId: ${document.id}');

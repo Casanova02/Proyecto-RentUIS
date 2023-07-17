@@ -190,7 +190,7 @@ class _AddRequestPageState extends State<AddRequestPage> {
 
       // Almacenar la URL de descarga de la imagen en el campo "image" de la colección "requests"
       FirebaseFirestore.instance.collection('items_solicitados').doc(requestId).set({
-     
+
         'userId': userId,
         'name': title,
         'start_date': _startDateController.text,

@@ -392,4 +392,3 @@ Widget crearRecuadro({required int index}) {
     },
   );
 }
-

@@ -1,29 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'firebase_messaging.dart';
-import 'pages/password_recovery_page.dart';
-import 'pages/login_page.dart';
-import 'pages/home_page.dart';
-import 'pages/registration_page.dart';
-import 'pages/request_page.dart';
+import 'package:rentuis/pages/login_page.dart';
+import 'package:rentuis/pages/password_recovery_page.dart';
+import 'package:rentuis/pages/registration_page.dart';
+import 'package:rentuis/pages/home_page.dart';
+import 'package:rentuis/pages/offers_page.dart';
+import 'package:rentuis/pages/add_offer_page.dart';
+import 'package:rentuis/firebase_messaging.dart';
+import 'package:rentuis/pages/request_page.dart'; // Importar el archivo firebase_messaging.dart
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  final messagingService = FirebaseMessagingService(); // Crear una instancia del servicio de notificaciones
+  messagingService.init(); // Inicializar el servicio de notificaciones
   runApp(RentUISApp());
 }
 
 class RentUISApp extends StatelessWidget {
-    final FirebaseMessagingService messagingService = FirebaseMessagingService();
-  @override
-  void initState() {
+  final FirebaseMessagingService messagingService = FirebaseMessagingService();
 
+  RentUISApp() {
     messagingService.init();
   }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner:false,
+      debugShowCheckedModeBanner: false,
       title: 'RentUIS',
       theme: ThemeData(
         primarySwatch: Colors.lightGreen,
