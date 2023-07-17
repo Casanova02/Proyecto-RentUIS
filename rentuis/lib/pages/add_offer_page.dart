@@ -124,7 +124,7 @@ class _AddOfferPageState extends State<AddOfferPage> {
 
       // Almacenar la URL de descarga de la imagen y el ID del usuario en el campo "image" y "userId" de la colección "items"
       FirebaseFirestore.instance.collection('items').add({
-        'userId': userId,
+        'userId': userEmail,
         'name': title,
         'price': price,
         'time_unit': timeUnit,
