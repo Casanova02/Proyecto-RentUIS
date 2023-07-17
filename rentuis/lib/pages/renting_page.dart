@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:intl/intl.dart';
 import 'add_offer_page.dart';
+import 'add_request_page.dart';
 
 class RentingPage extends StatefulWidget {
   final String userEmail;
@@ -186,7 +187,7 @@ class _RentingPageState extends State<RentingPage> {
               context,
               PageRouteBuilder(
                 pageBuilder: (context, animation, secondaryAnimation) =>
-                    AddOfferPage(userEmail: widget.userEmail),
+                    AddRequestPage(userEmail: widget.userEmail),
                 transitionsBuilder: (context, animation, secondaryAnimation, child) {
                   return FadeTransition(
                     opacity: animation,
