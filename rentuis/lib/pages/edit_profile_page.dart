@@ -32,11 +32,44 @@ class _EditProfilePageState extends State<EditProfilePage> {
   String nombres = '';
   String apellidos = '';
   String phoneNumber = '';
-  String carrera = '';
+  String carrera = 'Biología';
   // Y otros datos del usuario que necesites...
 
+  List<String> carreraOptions = [
+    'Biología',
+    'Física',
+    'Lic. en Matemáticas',
+    'Matemáticas',
+    'Química',
+    'Diseño Industrial',
+    'Ingeniería Civil',
+    'Ingeniería Eléctrica',
+    'Ingeniería Electrónica',
+    'Ingeniería Industrial',
+    'Ingeniería Mecánica',
+    'Ingeniería de Sistemas',
+    'Geología',
+    'Ingeniería Metalúrgica',
+    'Ingeniería de Petróleos',
+    'Ingeniería Química',
+    'Derecho',
+    'Economía',
+    'Filosofía',
+    'Historia y Archivística',
+    'Lic. en Educación Básica Primaria',
+    'Lic. en Literatura y Lengua Castellana',
+    'Lic. en Lenguas Extranjeras',
+    'Lic. en Música',
+    'Trabajo Social',
+    'Enfermería',
+    'Fisioterapia',
+    'Medicina',
+    'Microbiología y Bioanálisis',
+    'Nutrición y Dietética',
+  ];
+
   File? _imageFile;
-  late DocumentReference _userDocument;// Archivo de imagen seleccionado
+  late DocumentReference _userDocument; // Archivo de imagen seleccionado
 
   @override
   void initState() {
@@ -63,7 +96,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
     }
   }
 
-
   Future<void> saveChanges() async {
     try {
       await _userDocument.update({
@@ -73,14 +105,63 @@ class _EditProfilePageState extends State<EditProfilePage> {
         'carrera': carrera,
         // Aquí puedes agregar más campos que desees actualizar en Firestore.
       });
+      // Obtener la nueva contraseña ingresada en el campo de texto
+      String newPassword = _passwordController.text.trim();
 
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('Cambios guardados correctamente.'),
-      ));
+      // Verificar si la contraseña ha sido editada y no está vacía
+      if (_isEditingPassword && newPassword.isNotEmpty) {
+        // Obtener el usuario actual
+        User? user = FirebaseAuth.instance.currentUser;
+
+        // Verificar que el usuario esté autenticado
+        if (user != null) {
+          // Actualizar el campo "contraseña" en Firestore solo si es diferente de la contraseña actual
+          if (user.email != null) {
+            AuthCredential credential = EmailAuthProvider.credential(email: user.email!, password: newPassword);
+            await user.reauthenticateWithCredential(credential);
+
+            await user.updatePassword(newPassword);
+          } else {
+            print('El usuario no tiene un correo electrónico válido.');
+          }
+        }
+      }
+
+      if (_imageFile != null) {
+        // Subir la nueva imagen de perfil a Firebase Storage
+        String userId = FirebaseAuth.instance.currentUser!.uid;
+        String fileName = 'perfil_$userId.jpg';
+
+        firebase_storage.Reference ref =
+        firebase_storage.FirebaseStorage.instance.ref().child('profile_images').child(fileName);
+
+        await ref.putFile(_imageFile!);
+        String downloadURL = await ref.getDownloadURL();
+
+        // Actualizar la URL de la imagen de perfil en la base de datos
+        User? user = FirebaseAuth.instance.currentUser;
+        if (user != null) {
+          await FirebaseFirestore.instance.collection('usuarios').doc(user.uid).update({
+            'image': downloadURL,
+          });
+        }
+
+        setState(() {
+          _profileImageUrl = downloadURL;
+        });
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Cambios guardados correctamente.'),
+        ),
+      );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('Error al guardar los cambios.'),
-      ));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al guardar los cambios.'),
+        ),
+      );
       print('Error al guardar los cambios: $e');
     }
   }
@@ -114,15 +195,17 @@ class _EditProfilePageState extends State<EditProfilePage> {
               ),
             ),
             SizedBox(height: 16.0),
-            _buildInfoField('Nombres:', nombres,
+            _buildInfoField(
+              'Nombres:',
+              nombres,
               isEditable: _isEditingName,
-              controller: _nameController,
-              onEdit: () {
-                setState(() {
-                  _isEditingName = true;
-                  _nameController.text = nombres;
-                });
-              },
+              child: TextFormField(
+                controller: _nameController,
+                keyboardType: TextInputType.text,
+                decoration: InputDecoration(
+                  hintText: nombres,
+                ),
+              ),
               onSave: () {
                 setState(() {
                   nombres = _nameController.text.trim();
@@ -130,15 +213,17 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 });
               },
             ),
-            _buildInfoField('Apellidos:', apellidos,
+            _buildInfoField(
+              'Apellidos:',
+              apellidos,
               isEditable: _isEditingLastName,
-              controller: _lastNameController,
-              onEdit: () {
-                setState(() {
-                  _isEditingLastName = true;
-                  _lastNameController.text = apellidos;
-                });
-              },
+              child: TextFormField(
+                controller: _lastNameController,
+                keyboardType: TextInputType.text,
+                decoration: InputDecoration(
+                  hintText: apellidos,
+                ),
+              ),
               onSave: () {
                 setState(() {
                   apellidos = _lastNameController.text.trim();
@@ -150,13 +235,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
               'Número de Teléfono:',
               _isEditingPhone ? _phoneNumberController.text : phoneNumber,
               isEditable: _isEditingPhone,
-              controller: _phoneNumberController,
-              onEdit: () {
-                setState(() {
-                  _isEditingPhone = true;
-                  _phoneNumberController.text = phoneNumber;
-                });
-              },
+              child: TextFormField(
+                controller: _phoneNumberController,
+                keyboardType: TextInputType.phone,
+                decoration: InputDecoration(
+                  hintText: _isEditingPhone ? _phoneNumberController.text : phoneNumber,
+                ),
+              ),
               onSave: () {
                 setState(() {
                   phoneNumber = _phoneNumberController.text.trim();
@@ -169,34 +254,47 @@ class _EditProfilePageState extends State<EditProfilePage> {
               'Contraseña:',
               _isEditingPassword ? _passwordController.text.replaceAll(RegExp(r'.'), '*') : '********',
               isEditable: _isEditingPassword,
-              controller: _passwordController,
-              onEdit: () {
-                setState(() {
-                  _isEditingPassword = true;
-                  _passwordController.text = ''; // Puedes cargar la contraseña actual aquí para editarla
-                });
-              },
+              child: TextFormField(
+                controller: _passwordController,
+                keyboardType: TextInputType.text,
+                obscureText: true,
+                decoration: InputDecoration(
+                  hintText: 'Ingrese su nueva contraseña',
+                ),
+              ),
               onSave: () {
                 setState(() {
-                  // Aquí guardas la nueva contraseña en la base de datos
                   _isEditingPassword = false;
                 });
+                // Aquí guardas la nueva contraseña en la base de datos
+                // Implementa el código necesario para guardar la contraseña aquí.
               },
             ),
-            _buildInfoField('Carrera:', carrera,
+            _buildInfoField(
+              'Carrera:',
+              carrera,
               isEditable: _isEditingCarrera,
-              controller: _carreraController,
-              onEdit: () {
-                setState(() {
-                  _isEditingCarrera = true;
-                  _carreraController.text = carrera;
-                });
-              },
+              child: DropdownButtonFormField<String>(
+                isExpanded: true,
+                value: carrera, // Valor actual de la carrera seleccionada
+                onChanged: (newValue) {
+                  setState(() {
+                    carrera = newValue ?? '';
+                  });
+                },
+                items: carreraOptions.map((option) {
+                  return DropdownMenuItem<String>(
+                    value: option,
+                    child: Text(option),
+                  );
+                }).toList(),
+              ),
               onSave: () {
                 setState(() {
-                  carrera = _carreraController.text.trim();
                   _isEditingCarrera = false;
                 });
+                // Aquí guardas la nueva carrera en Firestore
+                _userDocument.update({'carrera': carrera});
               },
             ),
             SizedBox(height: 16.0),
@@ -210,23 +308,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
     );
   }
 
-  Widget _buildInfoField(String label, String value,
-      {bool isEditable = false, TextEditingController? controller, Function()? onEdit, Function()? onSave}) {
+  Widget _buildInfoField(String label, String value, {bool isEditable = false, Widget? child, Function()? onSave}) {
     return ListTile(
       title: Text(
         label,
         style: TextStyle(fontWeight: FontWeight.bold),
       ),
-      subtitle: isEditable
-          ? TextFormField(
-        controller: isEditable ? controller : null,
-        keyboardType: TextInputType.text,
-        obscureText: label.contains('Contraseña'),
-        decoration: InputDecoration(
-          hintText: value,
-        ),
-      )
-          : Text(value),
+      subtitle: isEditable ? child : Text(value),
       trailing: isEditable
           ? Row(
         mainAxisSize: MainAxisSize.min,
@@ -253,16 +341,18 @@ class _EditProfilePageState extends State<EditProfilePage> {
           ),
         ],
       )
-          : onEdit != null
-          ? IconButton(
+          : IconButton(
         icon: Icon(Icons.edit),
         onPressed: () {
-          if (onEdit != null) {
-            onEdit();
-          }
+          setState(() {
+            _isEditingPhone = label.contains('Teléfono');
+            _isEditingPassword = label.contains('Contraseña');
+            _isEditingName = label.contains('Nombres');
+            _isEditingLastName = label.contains('Apellidos');
+            _isEditingCarrera = label.contains('Carrera');
+          });
         },
-      )
-          : null,
+      ),
     );
   }
 
