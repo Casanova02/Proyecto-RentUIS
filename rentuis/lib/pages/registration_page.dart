@@ -61,6 +61,18 @@ class _RegistrationPageState extends State<RegistrationPage> {
     carreraValue = carreraOptions[0];
   }
 
+  bool isImageSelected = false;
+
+  Future<void> pickImage(ImageSource source) async {
+    XFile? imageFile = await ImagePicker().pickImage(source: source);
+    if (imageFile != null) {
+      setState(() {
+        _image = imageFile;
+        isImageSelected = true;
+      });
+    }
+  }
+
   void verificarExistenciaUsuario(BuildContext context) async {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
 
@@ -84,17 +96,14 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
   Future<void> registrarUsuario() async {
     try {
-      // Registrar usuario en Firebase Authentication
       UserCredential userCredential =
       await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: emailController.text.trim(),
         password: contrasenaController.text.trim(),
       );
 
-      // Obtener el ID único del usuario registrado
       String userId = userCredential.user!.uid;
 
-      // Guardar la información del usuario en Firestore
       FirebaseFirestore firestore = FirebaseFirestore.instance;
       var usuarioRef = firestore.collection('usuarios').doc(userId);
       String imageUrl = await uploadImageToFirebaseStorage(File(_image!.path));
@@ -111,7 +120,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
         'image': imageUrl,
       });
 
-      // Mostrar mensaje de éxito y redirigir a la página de inicio de sesión
       _showSuccessMessage();
       _redirectToLoginPage();
     } catch (e) {
@@ -132,14 +140,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
     Navigator.pushReplacementNamed(context, '/'); // Ajusta la ruta según tu implementación
   }
 
-  Future<void> pickImage(ImageSource source) async {
-    XFile? imageFile = await ImagePicker().pickImage(source: source);
-    if (imageFile != null) {
-      setState(() {
-        _image = imageFile;
-      });
-    }
-  }
 
   Future<String> uploadImageToFirebaseStorage(File file) async {
     firebase_storage.Reference ref = firebase_storage.FirebaseStorage.instance
@@ -217,14 +217,14 @@ class _RegistrationPageState extends State<RegistrationPage> {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: Colors.grey[200],
-                      image: profileImage != null && profileImage!.existsSync()
+                      image: _image != null
                           ? DecorationImage(
-                        image: FileImage(profileImage!),
+                        image: FileImage(File(_image!.path)),
                         fit: BoxFit.cover,
                       )
                           : null,
                     ),
-                    child: profileImage == null
+                    child: _image == null
                         ? Icon(
                       Icons.add_a_photo,
                       size: 40.0,
@@ -361,8 +361,17 @@ class _RegistrationPageState extends State<RegistrationPage> {
                 SizedBox(height: 32.0),
                 GestureDetector(
                   onTap: () {
-                    if (_formKey.currentState != null && _formKey.currentState!.validate()) {
+                    if (_formKey.currentState != null &&
+                        _formKey.currentState!.validate() &&
+                        isImageSelected) {
                       verificarExistenciaUsuario(context);
+                    } else if (!isImageSelected) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Por favor, selecciona una foto de perfil.'),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
                     }
                   },
                   child: Container(
