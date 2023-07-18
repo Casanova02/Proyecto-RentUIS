@@ -1,10 +1,10 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:rentuis/pages/rents_page.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'add_request_page.dart';
 import 'home_page.dart';
 import 'offers_page.dart';
+import 'rents_page.dart';
 
 class RequestPage extends StatefulWidget {
   final String userEmail;
@@ -19,6 +19,7 @@ class _RequestPageState extends State<RequestPage> {
   int selectedIndex = 0;
   int count = 0;
   int clickCounter = 0;
+  final TextEditingController _searchController = TextEditingController(); // Nuevo controlador de texto
 
   @override
   Widget build(BuildContext context) {
@@ -31,23 +32,23 @@ class _RequestPageState extends State<RequestPage> {
     ];
 
     return Scaffold(
-    appBar: AppBar(
-    flexibleSpace: Container(
-    decoration: BoxDecoration(
-    gradient: LinearGradient(
-    colors: [
-    Colors.lightBlueAccent,
-    Colors.lightGreen,
-    ],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    ),
-    ),
-    ),
-    title: Text('Solicitudes disponibles'),
-    actions: [],
-      automaticallyImplyLeading: false,
-    ),
+      appBar: AppBar(
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Colors.lightBlueAccent,
+                Colors.lightGreen,
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
+        title: Text('Solicitudes disponibles'),
+        actions: [],
+        automaticallyImplyLeading: false,
+      ),
       body: Column(
         children: [
           Padding(
@@ -56,15 +57,21 @@ class _RequestPageState extends State<RequestPage> {
               data: Theme.of(context).copyWith(
                 inputDecorationTheme: InputDecorationTheme(
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(25.0), // Bordes más redondeados
+                    borderRadius: BorderRadius.circular(25.0),
                   ),
                 ),
               ),
               child: TextField(
+                controller: _searchController, // Asigna el controlador de texto
                 decoration: InputDecoration(
                   labelText: 'Buscar',
                   prefixIcon: Icon(Icons.search),
                 ),
+                onChanged: (value) {
+                  setState(() {
+                    // Realiza la búsqueda y actualiza los resultados
+                  });
+                },
               ),
             ),
           ),
@@ -77,13 +84,20 @@ class _RequestPageState extends State<RequestPage> {
                 }
 
                 if (snapshot.hasData) {
+                  final searchTerm = _searchController.text.toLowerCase(); // Término de búsqueda en minúsculas
+
+                  final filteredData = snapshot.data!.docs.where((document) {
+                    final itemName = (document.data() as Map<String, dynamic>)['name'].toString().toLowerCase();
+                    return itemName.contains(searchTerm); // Filtra los documentos que contengan el término de búsqueda
+                  }).toList();
+
                   return ListView.separated(
-                    itemCount: snapshot.data!.docs.length,
+                    itemCount: filteredData.length,
                     separatorBuilder: (BuildContext context, int index) {
-                      return SizedBox(height: 15.0); // Separación vertical entre elementos
+                      return SizedBox(height: 15.0);
                     },
                     itemBuilder: (BuildContext context, int index) {
-                      DocumentSnapshot document = snapshot.data!.docs[index];
+                      DocumentSnapshot document = filteredData[index];
                       Map<String, dynamic> itemData = document.data() as Map<String, dynamic>;
                       String itemName = itemData['name'];
                       String startDateString = itemData['start_date'];
@@ -143,7 +157,6 @@ class _RequestPageState extends State<RequestPage> {
                             ),
                             trailing: ElevatedButton(
                               onPressed: () {
-
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
@@ -151,11 +164,9 @@ class _RequestPageState extends State<RequestPage> {
                                       userEmail: widget.userEmail,
                                       offerId: document.id,
                                     ),
-
                                   ),
                                 );
                                 print('Valor de offerId: ${document.id}');
-
                               },
                               child: Text('Ofertar'),
                               style: ElevatedButton.styleFrom(

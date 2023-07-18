@@ -19,6 +19,7 @@ class _RentPageState extends State<RentPage> {
   int selectedIndex = 2;
   int count = 0;
   int clickCounter = 0;
+  final TextEditingController _searchController = TextEditingController(); // Nuevo controlador de texto
 
   @override
   Widget build(BuildContext context) {
@@ -56,10 +57,16 @@ class _RentPageState extends State<RentPage> {
                 ),
               ),
               child: TextField(
+                controller: _searchController, // Asigna el controlador de texto
                 decoration: InputDecoration(
                   labelText: 'Buscar',
                   prefixIcon: Icon(Icons.search),
                 ),
+                onChanged: (value) {
+                  setState(() {
+                    // Realiza la búsqueda y actualiza los resultados
+                  });
+                },
               ),
             ),
           ),
@@ -72,13 +79,20 @@ class _RentPageState extends State<RentPage> {
                 }
 
                 if (snapshot.hasData) {
+                  final searchTerm = _searchController.text.toLowerCase(); // Término de búsqueda en minúsculas
+
+                  final filteredData = snapshot.data!.docs.where((document) {
+                    final itemName = (document.data() as Map<String, dynamic>)['name'].toString().toLowerCase();
+                    return itemName.contains(searchTerm); // Filtra los documentos que contengan el término de búsqueda
+                  }).toList();
+
                   return ListView.separated(
-                    itemCount: snapshot.data!.docs.length,
+                    itemCount: filteredData.length,
                     separatorBuilder: (BuildContext context, int index) {
                       return SizedBox(height: 15.0);
                     },
                     itemBuilder: (BuildContext context, int index) {
-                      DocumentSnapshot document = snapshot.data!.docs[index];
+                      DocumentSnapshot document = filteredData[index];
                       Map<String, dynamic> itemData = document.data() as Map<String, dynamic>;
                       String itemName = itemData['name'];
                       int itemPrice = itemData['price'];
@@ -131,7 +145,6 @@ class _RentPageState extends State<RentPage> {
                                 ),
                                 trailing: ElevatedButton(
                                   onPressed: () {
-
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
@@ -139,11 +152,9 @@ class _RentPageState extends State<RentPage> {
                                           userEmail: widget.userEmail,
                                           offerId: document.id,
                                         ),
-
                                       ),
                                     );
                                     print('Valor de offerId: ${document.id}');
-
                                   },
                                   child: Text('Rentar'),
                                   style: ElevatedButton.styleFrom(
