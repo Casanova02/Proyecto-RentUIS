@@ -122,11 +122,6 @@ class _MisSolicitacionesPageState extends State<MisSolicitaciones> {
                 objeto['name'], // Mostrar el campo 'name' del objeto
                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18), // Aplicar negrita al texto
               ),
-              const SizedBox(height: 6), // Espacio entre el nombre y la descripción
-              Text(
-                objeto['description'], // Mostrar el campo 'description' del objeto
-                style: const TextStyle(fontSize: 16.0), // Estilo del texto de la descripción
-              ),
               const SizedBox(height: 2), // Espacio entre la descripción y el precio
               Row(
                 children: [
