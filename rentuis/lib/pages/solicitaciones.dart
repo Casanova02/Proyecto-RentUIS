@@ -126,11 +126,24 @@ class _MisSolicitacionesPageState extends State<MisSolicitaciones> {
               Row(
                 children: [
                   const Text(
-                    'Precio: ',
+                    'Fecha inicial: ',
                     style: TextStyle(fontSize: 16.0),
                   ),
                   Text(
-                    objeto['price'].toString(), // Mostrar el campo 'price' del objeto
+                    objeto['start_date'].toString(), // Mostrar el campo 'price' del objeto
+                    style: const TextStyle(fontSize: 16.0),
+                  ),
+                ],
+              ),
+                            const SizedBox(height: 2), // Espacio entre la descripción y el precio
+              Row(
+                children: [
+                  const Text(
+                    'Fecha final: ',
+                    style: TextStyle(fontSize: 16.0),
+                  ),
+                  Text(
+                    objeto['start_date'].toString(), // Mostrar el campo 'price' del objeto
                     style: const TextStyle(fontSize: 16.0),
                   ),
                 ],
@@ -139,11 +152,11 @@ class _MisSolicitacionesPageState extends State<MisSolicitaciones> {
               Row(
                 children: [
                   const Text(
-                    'Rating: ',
+                    'Fecha final: ',
                     style: TextStyle(fontSize: 16.0),
                   ),
                   Text(
-                    objeto['rating'].toString(), // Mostrar el campo 'rating' del objeto
+                    objeto['end_date'].toString(), // Mostrar el campo 'rating' del objeto
                     style: const TextStyle(fontSize: 16.0),
                   ),
                 ],
