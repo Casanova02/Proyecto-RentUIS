@@ -3,6 +3,7 @@ import 'package:rentuis/pages/request_page.dart';
 import 'package:rentuis/pages/user_session.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'solicitaciones.dart';
 
 class MisRentas extends StatefulWidget {
   final String userEmail;
@@ -113,6 +114,7 @@ class MyListView extends StatelessWidget {
             final rating = data['rating']; // Valor del campo 'rating'
             final description = data['description']; // Valor del campo 'description'
             final price = data['price']; // Valor del campo 'price'
+            final solicitudes = data['solicitudes'];
 
             return Container(
               width: 370,
@@ -203,6 +205,55 @@ class MyListView extends StatelessWidget {
                             fontSize: 16.0,
                           ),
                         ),
+                        Text(
+                            'Solicitudes: ${solicitudes.length}',
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontSize: 16.0,
+                            ),
+                          ),
+                        //Boton para mis solicitaciones
+                          const SizedBox(height: 8),
+                          Container(
+                            width: 120,
+                            height: 35,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [Colors.lightBlueAccent, Colors.lightGreen],
+                                  begin: Alignment.centerLeft,
+                                  end: Alignment.centerRight,
+                                ),
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                              child: TextButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => MisSolicitaciones(
+                                        userEmail: userId,
+                                        solicitudes: solicitudes,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                style: TextButton.styleFrom(
+                                  padding: const EdgeInsets.all(8.0),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(30),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'Solicitudes',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16.0,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
                       ],
                     ),
                   ),

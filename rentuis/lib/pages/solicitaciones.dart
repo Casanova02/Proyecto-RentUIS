@@ -4,19 +4,19 @@ import 'package:rentuis/pages/user_session.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 
-class MisOfertas extends StatefulWidget {
+class MisSolicitaciones extends StatefulWidget {
   final String userEmail;
-  final List<dynamic> ofertas;
+  final List<dynamic> solicitudes;
 
-  MisOfertas({required this.userEmail, required this.ofertas});
+  MisSolicitaciones({required this.userEmail, required this.solicitudes});
 
   @override
   State<StatefulWidget> createState() {
-    return _MisOfertasPageState();
+    return _MisSolicitacionesPageState();
   }
 }
 
-class _MisOfertasPageState extends State<MisOfertas> {
+class _MisSolicitacionesPageState extends State<MisSolicitaciones> {
   late double _deviceHeight, _deviceWidth;
   String? userEmail;
 
@@ -28,7 +28,7 @@ class _MisOfertasPageState extends State<MisOfertas> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Mis Ofertas'),
+        title: const Text('Mis solicitaciones'),
         flexibleSpace: _buildGradientAppBar(),
       ),
       body: _buildOfertasListView(),
@@ -52,7 +52,7 @@ class _MisOfertasPageState extends State<MisOfertas> {
 
   Widget _buildOfertasListView() {
     return FutureBuilder<List<dynamic>>(
-      future: obtenerObjetosDesdeFirebase(widget.ofertas),
+      future: obtenerObjetosDesdeFirebase(widget.solicitudes),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(
@@ -182,7 +182,7 @@ class _MisOfertasPageState extends State<MisOfertas> {
       try {
         // Hacer la consulta a Firestore usando el ID de la oferta
         DocumentSnapshot snapshot = await FirebaseFirestore.instance
-            .collection('items')
+            .collection('items_solicitados')
             .doc(ofertaId)
             .get();
 
