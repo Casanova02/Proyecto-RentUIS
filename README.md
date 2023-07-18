@@ -6,4 +6,4 @@ Integrantes:
 * Carlos Andres Gutierrez Benavidez
 * Santiago Leal Casanova
 
-  El proyecto RentUIS es un aplicativo de rentas, donde la idea es conectar personas que tengan productos de interes con personas que deseen o necesiten dichos productos por una cantidad de tiempo limitada.
+El proyecto RentUIS es un aplicativo de rentas, donde la idea es conectar personas que tengan productos de interes con personas que deseen o necesiten dichos productos por una cantidad de tiempo limitada.
