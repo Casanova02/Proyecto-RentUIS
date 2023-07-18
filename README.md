@@ -4,4 +4,6 @@ Proyecto para la clase de ingeniería de software sobre un aplicativo para el ar
 Integrantes:
 * Oscar Andres Ramirez Serna
 * Carlos Andres Gutierrez Benavidez
-* Santiago Leal Caasnova
+* Santiago Leal Casanova
+
+  El proyecto RentUIS es un aplicativo de rentas, donde la idea es conectar personas que tengan productos de interes con personas que deseen o necesiten dichos productos por una cantidad de tiempo limitada.
