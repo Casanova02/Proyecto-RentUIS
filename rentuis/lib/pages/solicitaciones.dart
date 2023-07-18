@@ -19,6 +19,7 @@ class MisSolicitaciones extends StatefulWidget {
 class _MisSolicitacionesPageState extends State<MisSolicitaciones> {
   late double _deviceHeight, _deviceWidth;
   String? userEmail;
+  String? telefono;
 
   @override
   Widget build(BuildContext context) {
@@ -77,6 +78,7 @@ class _MisSolicitacionesPageState extends State<MisSolicitaciones> {
 
  Widget _buildObjetoContainer(Map<String, dynamic> objeto) {
   String imageUrl = objeto['image']; // Obtener la URL de la imagen desde el campo 'image'
+   _getUserId(objeto['userId']);
 
   return Container(
     padding: EdgeInsets.symmetric(horizontal: _deviceWidth * 0.01, vertical: _deviceHeight * 0.04),
@@ -152,11 +154,11 @@ class _MisSolicitacionesPageState extends State<MisSolicitaciones> {
               Row(
                 children: [
                   const Text(
-                    'Fecha final: ',
+                    'telefono: ',
                     style: TextStyle(fontSize: 16.0),
                   ),
                   Text(
-                    objeto['end_date'].toString(), // Mostrar el campo 'rating' del objeto
+                    telefono ?? ''.toString(), // Mostrar el campo 'rating' del objeto
                     style: const TextStyle(fontSize: 16.0),
                   ),
                 ],
@@ -205,4 +207,19 @@ class _MisSolicitacionesPageState extends State<MisSolicitaciones> {
 
     return objetos;
   }
+
+  void _getUserId(userId) async {
+    final QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('usuarios')
+        .where('email', isEqualTo: userId)
+        .get();
+
+    if (querySnapshot.docs.isNotEmpty) {
+      final DocumentSnapshot userDoc = querySnapshot.docs.first;
+      telefono = userDoc.get('numeroTelefono');
+    } else {
+      print('No se encontró un usuario con el correo electrónico proporcionado.');
+    }
+  }
+
 }
