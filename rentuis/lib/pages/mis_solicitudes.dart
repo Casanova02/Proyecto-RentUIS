@@ -53,7 +53,7 @@ class _MisSolicitudesPageState extends State<MisSolicitudes> {
         width: _deviceWidth,
         height: _deviceHeight,
         child: userEmail != null
-            ? MyListView(userEmail: widget.userEmail)
+            ? MyListView(userEmail: widget.userEmail, borrarDocumento: _borrarDocumento) // Pasamos el método como parámetro
             : const Center(
                 child: CircularProgressIndicator(),
               ),
@@ -76,12 +76,22 @@ class _MisSolicitudesPageState extends State<MisSolicitudes> {
       print('No se encontró un usuario con el correo electrónico proporcionado.');
     }
   }
+
+  void _borrarDocumento(String documentId) async {
+    try {
+      await FirebaseFirestore.instance.collection('items_solicitados').doc(documentId).delete();
+      print('Documento eliminado correctamente');
+    } catch (e) {
+      print('Error al eliminar el documento: $e');
+    }
+  }
 }
 
 class MyListView extends StatelessWidget {
   final String userEmail;
+  final void Function(String) borrarDocumento; // Declaración de la función para borrar el documento
 
-  MyListView({required this.userEmail});
+  MyListView({required this.userEmail, required this.borrarDocumento});
 
   @override
   Widget build(BuildContext context) {
@@ -109,6 +119,7 @@ class MyListView extends StatelessWidget {
           itemCount: documents.length,
           itemBuilder: (context, index) {
             final data = documents[index].data() as Map<String, dynamic>;
+            final documentId = documents[index].id; // Obtenemos el ID del documento
             final name = data['name'];
             final imageUrl = data['image'];
             final startDate = data['start_date'];
@@ -255,6 +266,13 @@ class MyListView extends StatelessWidget {
                               ),
                             ),
                           ),
+                          const SizedBox(height: 4), // Espacio entre el rating y el botón de borrado
+                          ElevatedButton(
+                            onPressed: () {
+                              borrarDocumento(documentId); // Llamada al método para borrar el documento
+                            },
+                            child: const Text('Borrar'),
+                          ),
                         ],
                       ),
                     ],
@@ -268,7 +286,3 @@ class MyListView extends StatelessWidget {
     );
   }
 }
-
-
-
-

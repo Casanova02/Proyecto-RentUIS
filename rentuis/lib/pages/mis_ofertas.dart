@@ -21,6 +21,7 @@ class _MisOfertasPageState extends State<MisOfertas> {
   late double _deviceHeight, _deviceWidth;
   String? userEmail;
   String? user;
+  String? telefono;
 
   @override
   Widget build(BuildContext context) {
@@ -79,6 +80,8 @@ class _MisOfertasPageState extends State<MisOfertas> {
 
 Widget _buildObjetoContainer(Map<String, dynamic> objeto) {
   String imageUrl = objeto['image']; // Obtener la URL de la imagen desde el campo 'image'
+  String userId = objeto['userId'];
+ _getUserId(objeto['userId']);
 
   return Container(
     padding: EdgeInsets.symmetric(horizontal: _deviceWidth * 0.01, vertical: _deviceHeight * 0.04),
@@ -155,6 +158,18 @@ Widget _buildObjetoContainer(Map<String, dynamic> objeto) {
                   ),
                 ],
               ),
+              Row(
+                children: [
+                  const Text(
+                    'telefono: ',
+                    style: TextStyle(fontSize: 16.0),
+                  ),
+                  Text(
+                    telefono ?? ''.toString(), // Mostrar el campo 'rating' del objeto
+                    style: const TextStyle(fontSize: 16.0),
+                  ),
+                ],
+              ),
               const SizedBox(height: 8), // Espacio entre el rating y el botón de borrado
               ElevatedButton(
                 onPressed: () {
@@ -226,33 +241,19 @@ Widget _buildObjetoContainer(Map<String, dynamic> objeto) {
     }
   }
 
+    void _getUserId(userId) async {
+    final QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('usuarios')
+        .where('email', isEqualTo: userId)
+        .get();
 
-  Future<void> getUserIdFromEmail() async {
-    try {
-      final QuerySnapshot snapshot = await FirebaseFirestore.instance
-          .collection('usuarios')
-          .where('email', isEqualTo: widget.userEmail)
-          .limit(1)
-          .get();
-
-      if (snapshot.size > 0) {
-        // Si encontramos un usuario con el email, obtenemos el id
-        final user = snapshot.docs.first;
-        userEmail = user.id;
-        print('---------------------------');
-        print('---------------------------');
-        print('---------------------------');
-        print(userEmail);
-      } else {
-        // Si no se encuentra el usuario, puedes mostrar un mensaje de error
-        // o realizar alguna otra acción.
-        print('Usuario no encontrado con el email: ${widget.userEmail}');
-      }
-    } catch (e) {
-      print('Error al obtener el id del usuario: $e');
+    if (querySnapshot.docs.isNotEmpty) {
+      final DocumentSnapshot userDoc = querySnapshot.docs.first;
+      telefono = userDoc.get('numeroTelefono');
+    } else {
+      print('No se encontró un usuario con el correo electrónico proporcionado.');
     }
   }
-
 
 
 }
