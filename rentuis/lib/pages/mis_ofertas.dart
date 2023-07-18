@@ -22,6 +22,7 @@ class _MisOfertasPageState extends State<MisOfertas> {
   String? userEmail;
   String? user;
   String? telefono;
+  String? nombres;
 
   @override
   Widget build(BuildContext context) {
@@ -123,6 +124,18 @@ Widget _buildObjetoContainer(Map<String, dynamic> objeto) {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Row(
+                children: [
+                  const Text(
+                    'telefono: ',
+                    style: TextStyle(fontSize: 16.0),
+                  ),
+                  Text(
+                    nombres ?? ''.toString(), // Mostrar el campo 'rating' del objeto
+                    style: const TextStyle(fontSize: 16.0),
+                  ),
+                ],
+              ),
               Text(
                 objeto['name'], // Mostrar el campo 'name' del objeto
                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18), // Aplicar negrita al texto
@@ -250,6 +263,7 @@ Widget _buildObjetoContainer(Map<String, dynamic> objeto) {
     if (querySnapshot.docs.isNotEmpty) {
       final DocumentSnapshot userDoc = querySnapshot.docs.first;
       telefono = userDoc.get('numeroTelefono');
+      nombres = userDoc.get('nombres');
     } else {
       print('No se encontró un usuario con el correo electrónico proporcionado.');
     }
