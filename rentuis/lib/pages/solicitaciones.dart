@@ -20,6 +20,7 @@ class _MisSolicitacionesPageState extends State<MisSolicitaciones> {
   late double _deviceHeight, _deviceWidth;
   String? userEmail;
   String? telefono;
+  String? nombres;
 
   @override
   Widget build(BuildContext context) {
@@ -124,6 +125,19 @@ class _MisSolicitacionesPageState extends State<MisSolicitaciones> {
                 objeto['name'], // Mostrar el campo 'name' del objeto
                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18), // Aplicar negrita al texto
               ),
+                           const SizedBox(height: 2), // Espacio entre el precio y el rating
+              Row(
+                children: [
+                  const Text(
+                    'Nombre: ',
+                    style: TextStyle(fontSize: 16.0),
+                  ),
+                  Text(
+                    nombres ?? ''.toString(), // Mostrar el campo 'rating' del objeto
+                    style: const TextStyle(fontSize: 16.0),
+                  ),
+                ],
+              ),
               const SizedBox(height: 2), // Espacio entre la descripción y el precio
               Row(
                 children: [
@@ -217,6 +231,7 @@ class _MisSolicitacionesPageState extends State<MisSolicitaciones> {
     if (querySnapshot.docs.isNotEmpty) {
       final DocumentSnapshot userDoc = querySnapshot.docs.first;
       telefono = userDoc.get('numeroTelefono');
+      nombres = userDoc.get('nombres');
     } else {
       print('No se encontró un usuario con el correo electrónico proporcionado.');
     }
