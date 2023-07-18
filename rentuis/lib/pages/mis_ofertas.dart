@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:rentuis/pages/request_page.dart';
 import 'package:rentuis/pages/user_session.dart';
@@ -19,6 +20,7 @@ class MisOfertas extends StatefulWidget {
 class _MisOfertasPageState extends State<MisOfertas> {
   late double _deviceHeight, _deviceWidth;
   String? userEmail;
+  String? user;
 
   @override
   Widget build(BuildContext context) {
@@ -75,7 +77,7 @@ class _MisOfertasPageState extends State<MisOfertas> {
     );
   }
 
- Widget _buildObjetoContainer(Map<String, dynamic> objeto) {
+Widget _buildObjetoContainer(Map<String, dynamic> objeto) {
   String imageUrl = objeto['image']; // Obtener la URL de la imagen desde el campo 'image'
 
   return Container(
@@ -91,7 +93,7 @@ class _MisOfertasPageState extends State<MisOfertas> {
         Container(
           width: 90, // Tamaño del cuadrado verde
           height: 90, // Tamaño del cuadrado verde
-          margin: const EdgeInsets.only(right: 8.0, left: 8.0),
+          margin: const EdgeInsets.only(right: 6.0, left: 8.0),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               colors: [
@@ -153,6 +155,14 @@ class _MisOfertasPageState extends State<MisOfertas> {
                   ),
                 ],
               ),
+              const SizedBox(height: 8), // Espacio entre el rating y el botón de borrado
+              ElevatedButton(
+                onPressed: () {
+                  // Lógica para borrar el objeto aquí
+                  _borrarObjeto(widget.ofertas);
+                },
+                child: const Text('Borrar'),
+              ),
             ],
           ),
         ),
@@ -160,8 +170,6 @@ class _MisOfertasPageState extends State<MisOfertas> {
     ),
   );
 }
-
-
 
   Widget _buildObjetoListTile(Map<String, dynamic> objeto) {
     return Expanded(
@@ -177,7 +185,7 @@ class _MisOfertasPageState extends State<MisOfertas> {
 
   Future<List<dynamic>> obtenerObjetosDesdeFirebase(List<dynamic> ofertas) async {
     List<dynamic> objetos = [];
-
+ 
     for (var ofertaId in ofertas) {
       try {
         // Hacer la consulta a Firestore usando el ID de la oferta
@@ -197,4 +205,54 @@ class _MisOfertasPageState extends State<MisOfertas> {
 
     return objetos;
   }
+
+
+  void _borrarObjeto(List<dynamic> objeto) async {
+    // Obtenemos el ID del objeto a borrar desde el mapa
+    String objectId = objeto[0].toString();
+    print('El id del objeto es');
+    print(objectId);
+
+    try {
+      // Eliminar el objeto de Firebase usando su ID
+      await FirebaseFirestore.instance.collection('items').doc(objectId).delete();
+      
+      // Eliminar el ID del objeto de la lista ofertas local
+      setState(() {
+        widget.ofertas.remove(objectId);
+      });
+    } catch (e) {
+      print('Error al borrar el objeto con ID $objectId: $e');
+    }
+  }
+
+
+  Future<void> getUserIdFromEmail() async {
+    try {
+      final QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collection('usuarios')
+          .where('email', isEqualTo: widget.userEmail)
+          .limit(1)
+          .get();
+
+      if (snapshot.size > 0) {
+        // Si encontramos un usuario con el email, obtenemos el id
+        final user = snapshot.docs.first;
+        userEmail = user.id;
+        print('---------------------------');
+        print('---------------------------');
+        print('---------------------------');
+        print(userEmail);
+      } else {
+        // Si no se encuentra el usuario, puedes mostrar un mensaje de error
+        // o realizar alguna otra acción.
+        print('Usuario no encontrado con el email: ${widget.userEmail}');
+      }
+    } catch (e) {
+      print('Error al obtener el id del usuario: $e');
+    }
+  }
+
+
+
 }
