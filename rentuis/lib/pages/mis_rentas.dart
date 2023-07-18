@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+ import 'package:flutter/material.dart';
 import 'package:rentuis/pages/request_page.dart';
 import 'package:rentuis/pages/user_session.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -53,7 +53,7 @@ class _MisRentasPageState extends State<MisRentas> {
         width: _deviceWidth,
         height: _deviceHeight,
         child: userEmail != null
-            ? MyListView(userId: widget.userEmail, borrarDocumento: _borrarDocumento) // Pasamos el método como parámetro
+            ? MyListView(userId: widget.userEmail!)
             : const Center(
                 child: CircularProgressIndicator(),
               ),
@@ -76,22 +76,12 @@ class _MisRentasPageState extends State<MisRentas> {
       print('No se encontró un usuario con el correo electrónico proporcionado.');
     }
   }
-
-  void _borrarDocumento(String documentId) async {
-    try {
-      await FirebaseFirestore.instance.collection('items').doc(documentId).delete();
-      print('Documento eliminado correctamente');
-    } catch (e) {
-      print('Error al eliminar el documento: $e');
-    }
-  }
 }
 
 class MyListView extends StatelessWidget {
   final String userId;
-  final void Function(String) borrarDocumento; // Declaración de la función para borrar el documento
 
-  MyListView({required this.userId, required this.borrarDocumento});
+  MyListView({required this.userId});
 
   @override
   Widget build(BuildContext context) {
@@ -119,7 +109,6 @@ class MyListView extends StatelessWidget {
           itemCount: documents.length,
           itemBuilder: (context, index) {
             final data = documents[index].data() as Map<String, dynamic>;
-            final documentId = documents[index].id; // Obtenemos el ID del documento
             final name = data['name']; // Accedemos al campo 'name' del documento
             final imageUrl = data['image']; // URL de la imagen
             final rating = data['rating']; // Valor del campo 'rating'
@@ -217,60 +206,56 @@ class MyListView extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          'Solicitudes: ${solicitudes.length}',
-                          style: const TextStyle(
-                            color: Colors.black,
-                            fontSize: 16.0,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Container(
-                          width: 120,
-                          height: 35,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [Colors.lightBlueAccent, Colors.lightGreen],
-                                begin: Alignment.centerLeft,
-                                end: Alignment.centerRight,
-                              ),
-                              borderRadius: BorderRadius.circular(30),
+                            'Solicitudes: ${solicitudes.length}',
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontSize: 16.0,
                             ),
-                            child: TextButton(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => MisSolicitaciones(
-                                      userEmail: userId,
-                                      solicitudes: solicitudes,
+                          ),
+                        //Boton para mis solicitaciones
+                          const SizedBox(height: 8),
+                          Container(
+                            width: 120,
+                            height: 35,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [Colors.lightBlueAccent, Colors.lightGreen],
+                                  begin: Alignment.centerLeft,
+                                  end: Alignment.centerRight,
+                                ),
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                              child: TextButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => MisSolicitaciones(
+                                        userEmail: userId,
+                                        solicitudes: solicitudes,
+                                      ),
                                     ),
+                                  );
+                                },
+                                style: TextButton.styleFrom(
+                                  padding: const EdgeInsets.all(8.0),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(30),
                                   ),
-                                );
-                              },
-                              style: TextButton.styleFrom(
-                                padding: const EdgeInsets.all(8.0),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(30),
+                                ),
+                                child: const Text(
+                                  'Solicitudes',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16.0,
+                                  ),
                                 ),
                               ),
-                              child: const Text(
-                                'Solicitudes',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16.0,
-                                ),
-                              ),
+                              
                             ),
+                            
                           ),
-                        ),
-                        const SizedBox(height: 8), // Espacio entre el rating y el botón de borrado
-                        ElevatedButton(
-                          onPressed: () {
-                            borrarDocumento(documentId); // Llamada al método para borrar el documento
-                          },
-                          child: const Text('Borrar'),
-                        ),
                       ],
                     ),
                   ),

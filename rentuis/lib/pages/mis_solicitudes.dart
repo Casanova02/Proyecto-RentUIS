@@ -246,6 +246,7 @@ class MyListView extends StatelessWidget {
                                       builder: (context) => MisOfertas(
                                         userEmail: userEmail,
                                         ofertas: ofertas,
+                                        solicitudID:documentId,
                                       ),
                                     ),
                                   );
